@@ -1,5 +1,7 @@
 # tfsec
 
+View this extension in the [Marketplace](https://marketplace.visualstudio.com/items?itemName=tfsec.tfsec)
+
 VSCode extension for [tfsec](https://tfsec.dev) with a growing set of features for interacting with tfsec, THE Terraform static analysis tool.
 
 This is the very early days of this extension - at the moment it's only really good for ignore code resolution to save you looking up the code.
