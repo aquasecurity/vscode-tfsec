@@ -106,4 +106,4 @@ tfsecCodes.set("GEN001", "Potentially sensitive data stored in 'default' value o
 tfsecCodes.set("GEN002", "Potentially sensitive data stored in local value.");
 tfsecCodes.set("GEN003", "Potentially sensitive data stored in block attribute.");
 
-export const Codes = tfsecCodes;
+export const codes = tfsecCodes;
