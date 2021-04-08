@@ -23,6 +23,9 @@ Note: In this initial release, it is assumed that `tfsec` is on your path and th
 
 ## Release Notes
 
+### 1.0.4 
+
+Fix issue when run against workspace with no data
 ### 1.0.3
 
 Add the treeview for current issues in the workspace
