@@ -1,73 +1,49 @@
 import * as vscode from 'vscode';
-import { Codes } from './codes';
+import { UpdateTfsecIgnoreDecorations } from './ignore_resolution';
+import { TfsecIssueProvider } from './issues_treeview';
 
 // this method is called when vs code is activated
 export function activate(context: vscode.ExtensionContext) {
 
-	console.log('tfsec ignore decorator activated');
+	console.log('tfsec extension activated');
+	const issueProvider = new TfsecIssueProvider(context);
+	vscode.window.registerTreeDataProvider("tfsec-issues", issueProvider);
+	vscode.commands.registerCommand('tfsec.refresh', () => issueProvider.refresh());
 
 	let timeout: NodeJS.Timer | undefined = undefined;
-
-	// create a decorator type that we use to decorate small numbers
-	const tfsecIgnoreDecoration = vscode.window.createTextEditorDecorationType({
-		fontStyle: 'italic',
-		color: new vscode.ThemeColor("editorGutter.commentRangeForeground"),
-		after: {
-			margin: '0 0 0 3em',
-			textDecoration: 'none',
-		},
-		rangeBehavior: vscode.DecorationRangeBehavior.ClosedOpen,
-	});
-
-
 	let activeEditor = vscode.window.activeTextEditor;
 
-	function updateDecorations() {
-		if (!activeEditor) {
-			return;
-		}
-		const regEx = /tfsec:ignore:([A-Z]+?\d{3})/g;
-		const text = activeEditor.document.getText();
-		const tfsecIgnores: vscode.DecorationOptions[] = [];
-	
-		let match;
-		while ((match = regEx.exec(text))) {
-			const startPos = activeEditor.document.positionAt(match.index);
-			const endPos = activeEditor.document.positionAt(match.index + match[0].length);
-			const message = getTfsecDescription(match[1])
-			const decoration = { range: new vscode.Range(startPos, endPos), renderOptions: { after: {fontStyle: 'italic', contentText : message, color: new vscode.ThemeColor("editorGutter.commentRangeForeground") }}};
-			tfsecIgnores.push(decoration);
-		}
-		activeEditor.setDecorations(tfsecIgnoreDecoration, tfsecIgnores);
-	}
-
-	function getTfsecDescription(tfsecCode :string) {
-		return Codes.get(tfsecCode);
-	}
-
-	function triggerUpdateDecorations() {
+	function triggerDecoration() {
 		if (timeout) {
 			clearTimeout(timeout);
 			timeout = undefined;
 		}
-		timeout = setTimeout(updateDecorations, 500);
+
+		timeout = setTimeout(UpdateTfsecIgnoreDecorations, 500);
 	}
 
 	if (activeEditor) {
-		triggerUpdateDecorations();
+		triggerDecoration();
 	}
 
 	vscode.window.onDidChangeActiveTextEditor(editor => {
 		activeEditor = editor;
 		if (editor) {
-			triggerUpdateDecorations();
+			triggerDecoration();
 		}
 	}, null, context.subscriptions);
 
 	vscode.workspace.onDidChangeTextDocument(event => {
 		if (activeEditor && event.document === activeEditor.document) {
-			triggerUpdateDecorations();
+			triggerDecoration();
 		}
 	}, null, context.subscriptions);
 
+	context.subscriptions.push(vscode.commands.registerCommand('tfsec.runTfsec', () => {
+		let terminal = vscode.window.createTerminal();
+		terminal.show();
+		if (vscode.workspace && vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
+			terminal.sendText(`tfsec --force-all-dirs --format json > "${issueProvider.resultsStoragePath}"`);
+		}
+	}));
 }

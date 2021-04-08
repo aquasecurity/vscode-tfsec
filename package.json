@@ -3,33 +3,88 @@
   "displayName": "tfsec",
   "publisher": "tfsec",
   "description": "tfsec integration for VSCode",
-  "version": "1.0.1",
+  "version": "1.0.3",
   "engines": {
     "vscode": "^1.54.0"
   },
   "icon": "tfsec.png",
-
   "categories": [
     "Other"
   ],
   "activationEvents": [
-    "*"
+    "onView:tfsec-issues"
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "commands": [
+      {
+        "command": "tfsec.runTfsec",
+        "title": "tfsec: Run tfsec against workspace",
+        "icon": {
+          "light": "resources/light/run.svg",
+          "dark": "resources/dark/run.svg"
+        }
+      },
+      {
+        "command": "tfsec.refresh",
+        "title": "Refresh the issue list",
+        "icon": {
+          "light": "resources/light/refresh.svg",
+          "dark": "resources/dark/refresh.svg"
+        }
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "tfsec",
+          "title": "tfsec",
+          "icon": "media/tfsec.svg"
+        }
+      ]
+    },
+    "views": {
+      "tfsec": [
+        {
+          "id": "tfsec-issues",
+          "name": "tfsec Issues",
+          "icon": "media/tfsec.svg",
+          "contextualTitle": "Issue Explorer"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "tfsec-issues",
+        "contents": "No issues are found.\n[Run tfsec now](command:tfsec.runTfsec)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "tfsec.runTfsec",
+          "when": "view == tfsec-issues",
+          "group": "navigation@1"
+        },
+        {
+          "command": "tfsec.refresh",
+          "when": "view == tfsec-issues",
+          "group": "navigation@2"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
-    "lint": "eslint src --ext ts",
-    "test": "node ./out/test/runTest.js"
+    "lint": "eslint src --ext ts"
   },
   "devDependencies": {
     "@types/glob": "^7.1.3",
     "@types/mocha": "^8.0.4",
-    "@types/node": "^12.11.7",
+    "@types/node": "^12.20.7",
     "@types/vscode": "^1.54.0",
     "@typescript-eslint/eslint-plugin": "^4.14.1",
     "@typescript-eslint/parser": "^4.14.1",
@@ -39,5 +94,7 @@
     "typescript": "^4.1.3",
     "vscode-test": "^1.5.0"
   },
-  "repository": {"url": "https://github.com/tfsec/vscode-tfsec"}
+  "repository": {
+    "url": "https://github.com/tfsec/vscode-tfsec"
+  }
 }
