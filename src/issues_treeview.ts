@@ -29,16 +29,20 @@ export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem
 
 	// when there is a tfsec output file, load the results
 	loadResultData() {
-		if (this.resultsStoragePath !== "" && vscode.workspace && vscode.workspace.workspaceFolders && vscode.workspace.getWorkspaceFolder.length > 0) {
+		if (this.resultsStoragePath !== "" && vscode.workspace && vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
 			this.rootpath = vscode.workspace.workspaceFolders[0].uri.path;
 			if (fs.existsSync(this.resultsStoragePath)) {
-				this.taintResults = !this.taintResults;
+				
 				const data = require(this.resultsStoragePath);
 				this.resultData = [];
+				if (data === null || data.results === null) {
+					return;
+				}
 				for (let i = 0; i < data.results.length; i++) {
 					const element = data.results[i];
 					this.resultData.push(new ResultData(element));
 				}
+				this.taintResults = !this.taintResults;
 			}
 		} else {
 			vscode.window.showInformationMessage("No workspace detected to load tfsec results from");
