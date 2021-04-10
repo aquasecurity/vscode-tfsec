@@ -7,7 +7,7 @@ VSCode extension for [tfsec](https://tfsec.dev) with a growing set of features f
 
 ## Features
 
-### Ignore Code Resolution
+### Ignore Code Resolution
 
 Ignore codes will be automatically resolved and the description of the error will be displayed inline.
 
@@ -19,25 +19,28 @@ Initial release of the tfsec Issue Explorer. This control will add a new pane to
 
 Note: In this initial release, it is assumed that `tfsec` is on your path and that you have a relatively new version. The command is run in a terminal so any issues will be displayed and you can raise an issue accordingly. 
 
-![results explorer](results_explorer.png)
+Issues can be ignored by right clicking the location in the explorer and selecting `ignore this issue`.
+
+![tfsec explorer](tfsec-explorer.gif)
 
 ## Release Notes
 
+### 1.1.0
+
+TFsec Explorer
+
+### 1.0.7
+
+Fix and issue with the code resolution
+Record the demo gif and add
+Fix ignore placement
+
+### 1.0.6
+
+Add ignore functionality in the context menu.
+### 1.0.5
+
+Fix issue reloading the results file on recreation
 ### 1.0.4 
 
 Fix issue when run against workspace with no data
-### 1.0.3
-
-Add the treeview for current issues in the workspace
-
-### 1.0.2
-
-Restructuring the code
-
-### 1.0.1
-
-Fixes to the Readme for the marketplace page
-
-### 1.0.0
-
-Initial release of tfsec extension with ignore parsing

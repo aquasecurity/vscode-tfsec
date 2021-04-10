@@ -2,9 +2,28 @@
 
 All notable changes to the "tfsec" extension will be documented in this file.
 
-Check [Keep a Changelog](http://keepachangelog.com/) for recommendations on how to structure this file.
+### 1.0.8
+Fix and issue with the code resolution
+Record the demo gif and add
+Fix ignore placement
 
-## [Unreleased]
+### 1.0.6
+Add ignore functionality in the context menu.
 
-- Initial release
+### 1.0.5
+Fix issue reloading the results file on recreation
 
+### 1.0.4 
+Fix issue when run against workspace with no data
+
+### 1.0.3
+Add the treeview for current issues in the workspace
+
+### 1.0.2
+Restructuring the code
+
+### 1.0.1
+Fixes to the Readme for the marketplace page
+
+### 1.0.0
+Initial release of tfsec extension with ignore parsing

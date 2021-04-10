@@ -1,5 +1,6 @@
-import { TfsecTreeItem } from "./issues_treeview";
+
 import * as vscode from 'vscode';
+import { TfsecTreeItem } from './explorer/tfsec_treeitem';
 
 const sortByCode = (a: TfsecTreeItem, b: TfsecTreeItem): number => {
     if (a.code
