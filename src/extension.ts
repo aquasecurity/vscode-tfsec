@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import { UpdateTfsecIgnoreDecorations } from './ignore_resolution';
-import { TfsecIssueProvider } from './issues_treeview';
+import { TfsecIssueProvider } from './explorer/issues_treeview';
+import { TfsecTreeItem } from './explorer/tfsec_treeitem';
 
 // this method is called when vs code is activated
 export function activate(context: vscode.ExtensionContext) {
@@ -43,7 +44,17 @@ export function activate(context: vscode.ExtensionContext) {
 		let terminal = vscode.window.createTerminal();
 		terminal.show();
 		if (vscode.workspace && vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
-			terminal.sendText(`tfsec --force-all-dirs --format json > "${issueProvider.resultsStoragePath}"`);
+			terminal.sendText(`tfsec --force-all-dirs --exclude-downloaded-modules --format json > "${issueProvider.resultsStoragePath}"`);
 		}
 	}));
+
+	vscode.commands.registerCommand('tfsec.ignore', (element: TfsecTreeItem) => {
+		vscode.workspace.openTextDocument(vscode.Uri.file(element.filename)).then((file: vscode.TextDocument) => {
+			vscode.window.showTextDocument(file, 1, false).then(e => {
+				e.edit(edit => {
+					edit.insert(new vscode.Position(element.lineNumber - 1, 0), `# tfsec:ignore:${element.code}\n`);
+				});
+			});
+		});
+	});
 }

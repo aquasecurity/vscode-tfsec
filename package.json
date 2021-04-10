@@ -3,16 +3,22 @@
   "displayName": "tfsec",
   "publisher": "tfsec",
   "description": "tfsec integration for VSCode",
-  "version": "1.0.4",
+  "version": "1.1.0",
   "engines": {
     "vscode": "^1.54.0"
   },
   "icon": "tfsec.png",
   "categories": [
-    "Other"
+    "Other", "Linters"
   ],
+  "languages": [{
+    "id": "terraform",
+    "extensions": [ ".tf", ".tf.json" ],
+    "aliases": [ "Terraform" ]
+}],
   "activationEvents": [
-    "onView:tfsec-issues"
+    "onView:tfsec-issues",
+    "onLanguage:terraform"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -32,6 +38,14 @@
           "light": "resources/light/refresh.svg",
           "dark": "resources/dark/refresh.svg"
         }
+      },
+      {
+        "command": "tfsec.ignore",
+        "title": "Ignore this issue",
+        "icon": {
+          "light": "resources/light/refresh.svg",
+          "dark": "resources/dark/refresh.svg"
+        }
       }
     ],
     "viewsContainers": {
@@ -47,7 +61,7 @@
       "tfsec": [
         {
           "id": "tfsec-issues",
-          "name": "tfsec Issues",
+          "name": "tfsec Explorer",
           "icon": "media/tfsec.svg",
           "contextualTitle": "Issue Explorer"
         }
@@ -60,6 +74,12 @@
       }
     ],
     "menus": {
+      "commandPalette": [
+        {
+          "command": "tfsec.ignore",
+          "when": "false"
+        }
+      ],
       "view/title": [
         {
           "command": "tfsec.runTfsec",
@@ -70,6 +90,12 @@
           "command": "tfsec.refresh",
           "when": "view == tfsec-issues",
           "group": "navigation@2"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "tfsec.ignore",
+          "when": "view == tfsec-issues && viewItem == TFSEC_FILE_LOCATION"
         }
       ]
     }
