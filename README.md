@@ -25,22 +25,20 @@ Issues can be ignored by right clicking the location in the explorer and selecti
 
 ## Release Notes
 
+### 1.1.1
+- Fixing issues with Windows path
+- Switch to using --out for results file, Powershell piping seems to use UTF8 BOM which is tricky
 ### 1.1.0
-
-TFsec Explorer
+- TFsec Explorer
 
 ### 1.0.7
-
-Fix and issue with the code resolution
-Record the demo gif and add
-Fix ignore placement
+- Fix and issue with the code resolution
+- Record the demo gif and add
+- Fix ignore placement
 
 ### 1.0.6
-
-Add ignore functionality in the context menu.
+- Add ignore functionality in the context menu.
 ### 1.0.5
-
-Fix issue reloading the results file on recreation
+- Fix issue reloading the results file on recreation
 ### 1.0.4 
-
-Fix issue when run against workspace with no data
+- Fix issue when run against workspace with no data

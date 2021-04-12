@@ -3,22 +3,32 @@
   "displayName": "tfsec",
   "publisher": "tfsec",
   "description": "tfsec integration for VSCode",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "engines": {
     "vscode": "^1.54.0"
   },
   "icon": "tfsec.png",
   "categories": [
-    "Other", "Linters"
+    "Other",
+    "Linters"
   ],
-  "languages": [{
-    "id": "terraform",
-    "extensions": [ ".tf", ".tf.json" ],
-    "aliases": [ "Terraform" ]
-}],
+  "languages": [
+    {
+      "id": "terraform",
+      "extensions": [
+        ".tf",
+        ".tf.json"
+      ],
+      "aliases": [
+        "Terraform"
+      ]
+    }
+  ],
   "activationEvents": [
     "onView:tfsec-issues",
-    "onLanguage:terraform"
+    "onLanguage:terraform",
+    "onCommand:tfsec.runTfsec",
+    "*"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -103,7 +113,6 @@
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts"
   },

@@ -12,14 +12,17 @@ export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem
 	private resultData: ResultData[] = [];
 	private taintResults: boolean = true;
 	private rootpath: string = "";
+	private storagePath: string  = "";
 	public readonly resultsStoragePath: string = "";
 
 	constructor(context: vscode.ExtensionContext) {
 		if (context.storageUri) {
-			if (!fs.existsSync(context.storageUri.path)) {
-				fs.mkdirSync(context.storageUri.path);
+			this.storagePath = context.storageUri.fsPath;
+			console.log(`storage path is ${this.storagePath}`);
+			if (!fs.existsSync(this.storagePath)) {
+				fs.mkdirSync(context.storageUri.fsPath);
 			}
-			this.resultsStoragePath = path.join(context.storageUri.path, ".tfsec_results.json");
+			this.resultsStoragePath = path.join(context.storageUri.fsPath, ".tfsec_results.json");
 		}
 	}
 
@@ -33,8 +36,8 @@ export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem
 		if (this.resultsStoragePath !== "" && vscode.workspace && vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
 			this.rootpath = vscode.workspace.workspaceFolders[0].uri.path;
 			if (fs.existsSync(this.resultsStoragePath)) {
-				
-				const data = JSON.parse(fs.readFileSync(this.resultsStoragePath, 'utf-8'));
+				let content = fs.readFileSync(this.resultsStoragePath, 'utf8');
+				const data = JSON.parse(content);
 				this.resultData = [];
 				if (data === null || data.results === null) {
 					return;
@@ -108,7 +111,7 @@ export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem
 			command: "vscode.open",
 			title: "",
 			arguments: [
-				vscode.Uri.parse(result.filename),
+				vscode.Uri.file(result.filename),
 				{
 					selection: new vscode.Range(new vscode.Position(result.startLine - 1, 0), new vscode.Position(result.endLine, 0)),
 				}

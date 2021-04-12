@@ -23,6 +23,16 @@ export function activate(context: vscode.ExtensionContext) {
 		timeout = setTimeout(UpdateTfsecIgnoreDecorations, 500);
 	}
 
+	vscode.commands.registerCommand('tfsec.ignore', (element: TfsecTreeItem) => {
+		vscode.workspace.openTextDocument(vscode.Uri.file(element.filename)).then((file: vscode.TextDocument) => {
+			vscode.window.showTextDocument(file, 1, false).then(e => {
+				e.edit(edit => {
+					edit.insert(new vscode.Position(element.lineNumber - 1, 0), `# tfsec:ignore:${element.code}\n`);
+				});
+			});
+		});
+	});
+
 	if (activeEditor) {
 		triggerDecoration();
 	}
@@ -40,21 +50,13 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	}, null, context.subscriptions);
 
-	context.subscriptions.push(vscode.commands.registerCommand('tfsec.runTfsec', () => {
+	vscode.commands.registerCommand('tfsec.runTfsec', () => {
 		let terminal = vscode.window.createTerminal();
 		terminal.show();
 		if (vscode.workspace && vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
-			terminal.sendText(`tfsec --force-all-dirs --exclude-downloaded-modules --format json > "${issueProvider.resultsStoragePath}"`);
+			terminal.sendText(`tfsec --force-all-dirs --exclude-downloaded-modules --format json --out "${issueProvider.resultsStoragePath}"`);
 		}
-	}));
-
-	vscode.commands.registerCommand('tfsec.ignore', (element: TfsecTreeItem) => {
-		vscode.workspace.openTextDocument(vscode.Uri.file(element.filename)).then((file: vscode.TextDocument) => {
-			vscode.window.showTextDocument(file, 1, false).then(e => {
-				e.edit(edit => {
-					edit.insert(new vscode.Position(element.lineNumber - 1, 0), `# tfsec:ignore:${element.code}\n`);
-				});
-			});
-		});
 	});
+
+	
 }
