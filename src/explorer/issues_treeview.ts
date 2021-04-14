@@ -34,7 +34,7 @@ export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem
 	// when there is a tfsec output file, load the results
 	loadResultData() {
 		if (this.resultsStoragePath !== "" && vscode.workspace && vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
-			this.rootpath = vscode.workspace.workspaceFolders[0].uri.path;
+			this.rootpath = vscode.workspace.workspaceFolders[0].uri.fsPath;
 			if (fs.existsSync(this.resultsStoragePath)) {
 				let content = fs.readFileSync(this.resultsStoragePath, 'utf8');
 				const data = JSON.parse(content);
@@ -98,7 +98,7 @@ export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem
 			if (result.code !== code) {
 				continue;
 			}
-			let filename = result.filename.replace(this.rootpath, "");
+			let filename = trimPrefix(result.filename.replace(this.rootpath, ""), path.sep);
 			const cmd = this.createCommand(result);
 			var item = new TfsecTreeItem(`${filename}:${result.startLine}`, result, vscode.TreeItemCollapsibleState.None, cmd);
 			results.push(item);
@@ -120,5 +120,11 @@ export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem
 	}
 }
 
-
+function trimPrefix(input: string, prefix: string): string {
+	var result = input;
+	if (input.indexOf(prefix) === 0) {
+		result = input.substr(prefix.length);
+	}
+	return result;
+}
 

@@ -2,6 +2,9 @@
 
 All notable changes to the "tfsec" extension will be documented in this file.
 
+### 1.1.3
+- clean up the path in the treeview to remove prefix
+
 ### 1.1.2
 - Add some configuration options
   - binary path override

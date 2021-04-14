@@ -57,20 +57,21 @@ export function activate(context: vscode.ExtensionContext) {
 			terminal.sendText(buildCommand(issueProvider.resultsStoragePath));
 		}
 	});
-
-
 }
 
 function buildCommand(resultsStoragePath: string) {
 	const config = vscode.workspace.getConfiguration('tfsec');
-	const binary = config.get('binaryPath');
+	var binary = config.get('binaryPath', 'tfsec');
+	if (binary === "") {
+		binary = "tfsec";
+	}
 
 	var command = [];
 	command.push(binary);
-	if (config.get('fullDepthSearch') === 'true') {
+	if (config.get<boolean>('fullDepthSearch')) {
 		command.push('--force-all-dirs');
 	}
-	if (config.get('ignoreDownloadedModules') === 'true') {
+	if (config.get<boolean>('ignoreDownloadedModules')) {
 		command.push('--exclude-downloaded-modules');
 	}
 

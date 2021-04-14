@@ -24,6 +24,8 @@ Issues can be ignored by right clicking the location in the explorer and selecti
 ![tfsec explorer](tfsec-explorer.gif)
 
 ## Release Notes
+### 1.1.3
+- clean up the path in the treeview to remove prefix
 
 ### 1.1.2
 - Add some configuration options
