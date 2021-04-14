@@ -2,6 +2,10 @@
 
 All notable changes to the "tfsec" extension will be documented in this file.
 
+### 1.1.4
+- add link to check page from explorer view
+- update the icon for the activity bar
+
 ### 1.1.3
 - clean up the path in the treeview to remove prefix
 

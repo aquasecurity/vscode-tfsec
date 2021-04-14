@@ -24,6 +24,11 @@ Issues can be ignored by right clicking the location in the explorer and selecti
 ![tfsec explorer](tfsec-explorer.gif)
 
 ## Release Notes
+
+### 1.1.4
+- add link to check page from explorer view
+- update the icon for the activity bar
+
 ### 1.1.3
 - clean up the path in the treeview to remove prefix
 
@@ -39,14 +44,3 @@ Issues can be ignored by right clicking the location in the explorer and selecti
 ### 1.1.0
 - TFsec Explorer
 
-### 1.0.7
-- Fix and issue with the code resolution
-- Record the demo gif and add
-- Fix ignore placement
-
-### 1.0.6
-- Add ignore functionality in the context menu.
-### 1.0.5
-- Fix issue reloading the results file on recreation
-### 1.0.4 
-- Fix issue when run against workspace with no data

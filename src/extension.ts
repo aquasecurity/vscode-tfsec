@@ -19,7 +19,6 @@ export function activate(context: vscode.ExtensionContext) {
 			clearTimeout(timeout);
 			timeout = undefined;
 		}
-
 		timeout = setTimeout(UpdateTfsecIgnoreDecorations, 500);
 	}
 
@@ -56,6 +55,10 @@ export function activate(context: vscode.ExtensionContext) {
 		if (vscode.workspace && vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
 			terminal.sendText(buildCommand(issueProvider.resultsStoragePath));
 		}
+	});
+
+	vscode.commands.registerCommand('tfsec.viewCheck', (element: TfsecTreeItem) => {
+		vscode.env.openExternal(vscode.Uri.parse(`https://tfsec.dev/docs/${element.provider}/${element.code}`));
 	});
 }
 

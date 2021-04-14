@@ -6,9 +6,10 @@ export class TfsecTreeItem extends vscode.TreeItem {
 
 	treeItemType: TfsecTreeItemType;
     code: string;
+	provider: string;
 	lineNumber: number;
 	filename: string;
-    contextValue = 'tfsecIssue';
+    contextValue = '';
 
 	constructor(
 		public readonly title: string,
@@ -19,6 +20,7 @@ export class TfsecTreeItem extends vscode.TreeItem {
 		super(title, collapsibleState);
 		this.tooltip = `${resultData.codeDescription}`;
         this.code = resultData.code;
+		this.provider = resultData.provider;
 		this.description = resultData.codeDescription;
 		this.lineNumber = resultData.startLine;
 		this.filename = resultData.filename;
@@ -28,6 +30,7 @@ export class TfsecTreeItem extends vscode.TreeItem {
             this.contextValue = "TFSEC_FILE_LOCATION";
 		} else {
 			this.treeItemType = TfsecTreeItemType.issueCode;
+			this.contextValue = "TFSEC_CODE";
 		}
 	}
 
