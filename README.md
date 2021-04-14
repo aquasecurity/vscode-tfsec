@@ -25,6 +25,12 @@ Issues can be ignored by right clicking the location in the explorer and selecti
 
 ## Release Notes
 
+### 1.1.2
+- Add some configuration options
+  - binary path override
+  - deep searching
+  - exclude downloaded modules
+  
 ### 1.1.1
 - Fixing issues with Windows path
 - Switch to using --out for results file, Powershell piping seems to use UTF8 BOM which is tricky

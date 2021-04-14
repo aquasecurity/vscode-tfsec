@@ -54,9 +54,28 @@ export function activate(context: vscode.ExtensionContext) {
 		let terminal = vscode.window.createTerminal();
 		terminal.show();
 		if (vscode.workspace && vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
-			terminal.sendText(`tfsec --force-all-dirs --exclude-downloaded-modules --format json --out "${issueProvider.resultsStoragePath}"`);
+			terminal.sendText(buildCommand(issueProvider.resultsStoragePath));
 		}
 	});
 
-	
+
+}
+
+function buildCommand(resultsStoragePath: string) {
+	const config = vscode.workspace.getConfiguration('tfsec');
+	const binary = config.get('binaryPath');
+
+	var command = [];
+	command.push(binary);
+	if (config.get('fullDepthSearch') === 'true') {
+		command.push('--force-all-dirs');
+	}
+	if (config.get('ignoreDownloadedModules') === 'true') {
+		command.push('--exclude-downloaded-modules');
+	}
+
+	command.push('--format json');
+	command.push(`--out "${resultsStoragePath}"`);
+
+	return command.join(" ");
 }

@@ -2,9 +2,16 @@
 
 All notable changes to the "tfsec" extension will be documented in this file.
 
+### 1.1.2
+- Add some configuration options
+  - binary path override
+  - deep searching
+  - exclude downloaded modules
+
 ### 1.1.1
 - Fixing issues with Windows path
 - Switch to using --out for results file, Powershell piping seems to use UTF8 BOM which is tricky
+
 ### 1.1.0
 - TFsec Explorer
 
