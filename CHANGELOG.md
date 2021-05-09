@@ -2,6 +2,19 @@
 
 All notable changes to the "tfsec" extension will be documented in this file.
 
+### 1.1.7
+- Reload the tree when tfsec is run
+- move single line ignores above issue
+
+### 1.1.6
+- Add tfsec ignore on a same line when single line issue
+- add local check help to the Tfsec navigation pane
+- restructure code for easier disable of plugin
+
+### 1.1.5
+- Only use a single terminal for tfsec, don't create a new one on each run
+- Add option on extension settings to turn off the ignore code resolution
+
 ### 1.1.4
 - add link to check page from explorer view
 - update the icon for the activity bar

@@ -1,17 +1,30 @@
 import * as vscode from 'vscode';
-import { codes } from './codes';
+import { CheckManager } from './check_manager';
 
+let timeout: NodeJS.Timer | undefined = undefined;
 let activeEditor = vscode.window.activeTextEditor;
 
 const tfsecIgnoreDecoration = vscode.window.createTextEditorDecorationType({
 	fontStyle: 'italic',
 	color: new vscode.ThemeColor("editorGutter.commentRangeForeground"),
 	after: {
-		margin: '0 0 0 3em',
+		margin: '0 0 0 1em',
 		textDecoration: 'none',
 	},
 	rangeBehavior: vscode.DecorationRangeBehavior.ClosedOpen,
-});
+});	
+
+function triggerDecoration() {
+	const config = vscode.workspace.getConfiguration('tfsec');
+	if (!config.get<boolean>('resolveIgnoreCodes', true)) {
+		return;
+	}
+	if (timeout) {
+		clearTimeout(timeout);
+		timeout = undefined;
+	}
+	timeout = setTimeout(updateTfsecIgnoreDecorators, 500);
+}
 
 function updateTfsecIgnoreDecorators() {
 	if (!activeEditor) {
@@ -33,11 +46,11 @@ function updateTfsecIgnoreDecorators() {
 }
 
 function getTfsecDescription(tfsecCode :string) {
-	let code = codes.get(tfsecCode);
-	if (code === "") {
-		code = "[Uknown tfsec code]";
+	var check = CheckManager.getInstance().get(tfsecCode);
+	if (check === undefined) {
+		return "[Uknown tfsec code]";
 	}
-	return code;
+	return check.summary;
 }
 
-export { updateTfsecIgnoreDecorators as UpdateTfsecIgnoreDecorations };
+export {triggerDecoration};

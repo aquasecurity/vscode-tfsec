@@ -13,9 +13,9 @@ const sortByCode = (a: TfsecTreeItem, b: TfsecTreeItem): number => {
 };
 
 const sortByLineNumber = (a: TfsecTreeItem, b: TfsecTreeItem): number => {
-    if (a.lineNumber > b.lineNumber) {
+    if (a.startLineNumber > b.startLineNumber) {
         return 1;
-    } else if (a.lineNumber < b.lineNumber) {
+    } else if (a.startLineNumber < b.startLineNumber) {
         return -1;
     }
     return 0;
@@ -33,7 +33,7 @@ const uniqueLocations = (input: TfsecTreeItem[]): TfsecTreeItem[] => {
 
     for (let index = 1; index < input.length; index++) {
         const element = input[index];
-        if (last.code !== element.code || last.filename !== element.filename || last.lineNumber !== element.lineNumber) {
+        if (last.code !== element.code || last.filename !== element.filename || last.startLineNumber !== element.startLineNumber) {
             output.push(element);
             last = element;
         }
@@ -42,4 +42,16 @@ const uniqueLocations = (input: TfsecTreeItem[]): TfsecTreeItem[] => {
     return output;
 };
 
-export { sortByCode, uniqueLocations };
+const getOrCreateTfsecTerminal = () => {
+	if (vscode.window.terminals.length > 0) {
+		for (let i = 0; i < vscode.window.terminals.length; i++) {
+			const t = vscode.window.terminals[i];
+			if (t.name === "tfsec") {
+				return t;
+			}
+		}
+	}
+	return vscode.window.createTerminal("tfsec");
+};
+
+export { sortByCode, uniqueLocations, getOrCreateTfsecTerminal };

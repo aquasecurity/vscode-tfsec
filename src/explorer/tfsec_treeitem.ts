@@ -1,29 +1,31 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { ResultData } from './result_data';
+import { CheckResult } from './check_result';
 
 export class TfsecTreeItem extends vscode.TreeItem {
 
 	treeItemType: TfsecTreeItemType;
     code: string;
 	provider: string;
-	lineNumber: number;
+	startLineNumber: number;
+	endLineNumber: number;
 	filename: string;
     contextValue = '';
 
 	constructor(
 		public readonly title: string,
-		resultData: ResultData,
+		checkResult: CheckResult,
 		public collapsibleState: vscode.TreeItemCollapsibleState,
 		public command?: vscode.Command,
 	) {
 		super(title, collapsibleState);
-		this.tooltip = `${resultData.codeDescription}`;
-        this.code = resultData.code;
-		this.provider = resultData.provider;
-		this.description = resultData.codeDescription;
-		this.lineNumber = resultData.startLine;
-		this.filename = resultData.filename;
+		this.tooltip = `${checkResult.codeDescription}`;
+        this.code = checkResult.code;
+		this.provider = checkResult.provider;
+		this.description = checkResult.codeDescription;
+		this.startLineNumber = checkResult.startLine;
+		this.endLineNumber = checkResult.endLine;
+		this.filename = checkResult.filename;
 
 		if (collapsibleState === vscode.TreeItemCollapsibleState.None) {
 			this.treeItemType = TfsecTreeItemType.issueLocation;
@@ -36,10 +38,8 @@ export class TfsecTreeItem extends vscode.TreeItem {
 
 	iconPath = {
 		light: path.join(__filename, '..', '..', 'resources', 'light', 'dependency.svg'),
-		dark: path.join(__filename, '..', '..', 'resources', 'dark', 'dependency.svg')
+		dark:  path.join(__filename, '..', '..', 'resources', 'dark', 'dependency.svg')
 	};
-
-	
 }
 
 enum TfsecTreeItemType {

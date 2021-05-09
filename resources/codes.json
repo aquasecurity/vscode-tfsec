@@ -1,0 +1,956 @@
+{
+  "checks": [
+    {
+      "code": "AWS001",
+      "provider": "aws",
+      "description": "S3 Bucket has an ACL defined which allows public access.",
+      "impact": "The contents of the bucket can be accessed publicly",
+      "resolution": "Apply a more restrictive bucket ACL",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS001/"
+    },
+    {
+      "code": "AWS002",
+      "provider": "aws",
+      "description": "S3 Bucket does not have logging enabled.",
+      "impact": "There is no way to determine the access to this bucket",
+      "resolution": "Add a logging block to the resource to enable access logging",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS002/"
+    },
+    {
+      "code": "AWS003",
+      "provider": "aws",
+      "description": "AWS Classic resource usage.",
+      "impact": "Classic resources are running in a shared environment with other customers",
+      "resolution": "Switch to VPC resources",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS003/"
+    },
+    {
+      "code": "AWS004",
+      "provider": "aws",
+      "description": "Use of plain HTTP.",
+      "impact": "Your traffic is not protected",
+      "resolution": "Switch to HTTPS to benefit from TLS security features",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS004/"
+    },
+    {
+      "code": "AWS005",
+      "provider": "aws",
+      "description": "Load balancer is exposed to the internet.",
+      "impact": "The load balancer is exposed on the internet",
+      "resolution": "Switch to an internal load balancer or add a tfsec ignore",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS005/"
+    },
+    {
+      "code": "AWS006",
+      "provider": "aws",
+      "description": "An ingress security group rule allows traffic from /0.",
+      "impact": "Your port exposed to the internet",
+      "resolution": "Set a more restrictive cidr range",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS006/"
+    },
+    {
+      "code": "AWS007",
+      "provider": "aws",
+      "description": "An egress security group rule allows traffic to /0.",
+      "impact": "Your port is egressing data to the internet",
+      "resolution": "Set a more restrictive cidr range",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS007/"
+    },
+    {
+      "code": "AWS008",
+      "provider": "aws",
+      "description": "An inline ingress security group rule allows traffic from /0.",
+      "impact": "The port is exposed for ingress from the internet",
+      "resolution": "Set a more restrictive cidr range",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS008/"
+    },
+    {
+      "code": "AWS009",
+      "provider": "aws",
+      "description": "An inline egress security group rule allows traffic to /0.",
+      "impact": "The port is exposed for egressing data to the internet",
+      "resolution": "Set a more restrictive cidr range",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS009/"
+    },
+    {
+      "code": "AWS010",
+      "provider": "aws",
+      "description": "An outdated SSL policy is in use by a load balancer.",
+      "impact": "The SSL policy is outdated and has known vulnerabilities",
+      "resolution": "Use a more recent TLS/SSL policy for the load balancer",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS010/"
+    },
+    {
+      "code": "AWS011",
+      "provider": "aws",
+      "description": "A database resource is marked as publicly accessible.",
+      "impact": "The database instance is publicly accessible",
+      "resolution": "Set the database to not be publically accessible",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS011/"
+    },
+    {
+      "code": "AWS012",
+      "provider": "aws",
+      "description": "A resource has a public IP address.",
+      "impact": "The instance or configuration is publically accessible",
+      "resolution": "Set the instance to not be publically accessible",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS012/"
+    },
+    {
+      "code": "AWS013",
+      "provider": "aws",
+      "description": "Task definition defines sensitive environment variable(s).",
+      "impact": "Sensitive data could be exposed in the AWS Management Console",
+      "resolution": "Use secrets for the task definition",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS013/"
+    },
+    {
+      "code": "AWS014",
+      "provider": "aws",
+      "description": "Launch configuration with unencrypted block device.",
+      "impact": "The block device is could be compromised and read from",
+      "resolution": "Turn on encryption for all block devices",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS014/"
+    },
+    {
+      "code": "AWS015",
+      "provider": "aws",
+      "description": "Unencrypted SQS queue.",
+      "impact": "The SQS queue messages could be read if compromised",
+      "resolution": "Turn on SQS Queue encryption",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS015/"
+    },
+    {
+      "code": "AWS016",
+      "provider": "aws",
+      "description": "Unencrypted SNS topic.",
+      "impact": "The SNS topic messages could be read if compromised",
+      "resolution": "Turn on SNS Topic encryption",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS016/"
+    },
+    {
+      "code": "AWS017",
+      "provider": "aws",
+      "description": "Unencrypted S3 bucket.",
+      "impact": "The bucket objects could be read if compromised",
+      "resolution": "Configure bucket encryption",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS017/"
+    },
+    {
+      "code": "AWS018",
+      "provider": "aws",
+      "description": "Missing description for security group/security group rule.",
+      "impact": "Descriptions provide context for the firewall rule reasons",
+      "resolution": "Add descriptions for all security groups anf rules",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS018/"
+    },
+    {
+      "code": "AWS019",
+      "provider": "aws",
+      "description": "A KMS key is not configured to auto-rotate.",
+      "impact": "Long life KMS keys increase the attack surface when compromised",
+      "resolution": "Configure KMS key to auto rotate",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS019/"
+    },
+    {
+      "code": "AWS020",
+      "provider": "aws",
+      "description": "CloudFront distribution allows unencrypted (HTTP) communications.",
+      "impact": "CloudFront is available through an unencrypted connection",
+      "resolution": "Only allow HTTPS for CloudFront distribution communication",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS020/"
+    },
+    {
+      "code": "AWS021",
+      "provider": "aws",
+      "description": "CloudFront distribution uses outdated SSL/TLS protocols.",
+      "impact": "Outdated SSL policies increase exposure to known vulnerabilites",
+      "resolution": "Use the most modern TLS/SSL policies available",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS021/"
+    },
+    {
+      "code": "AWS022",
+      "provider": "aws",
+      "description": "A MSK cluster allows unencrypted data in transit.",
+      "impact": "Intercepted data can be read in transit",
+      "resolution": "Enable in transit encryption",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS022/"
+    },
+    {
+      "code": "AWS023",
+      "provider": "aws",
+      "description": "ECR repository has image scans disabled.",
+      "impact": "The ability to scan images is not being used and vulnerabilities will not be highlighted",
+      "resolution": "Enable ECR image scanning",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS023/"
+    },
+    {
+      "code": "AWS024",
+      "provider": "aws",
+      "description": "Kinesis stream is unencrypted.",
+      "impact": "Intercepted data can be read in transit",
+      "resolution": "Enable in transit encryption",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS024/"
+    },
+    {
+      "code": "AWS025",
+      "provider": "aws",
+      "description": "API Gateway domain name uses outdated SSL/TLS protocols.",
+      "impact": "Outdated SSL policies increase exposure to known vulnerabilites",
+      "resolution": "Use the most modern TLS/SSL policies available",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS025/"
+    },
+    {
+      "code": "AWS031",
+      "provider": "aws",
+      "description": "Elasticsearch domain isn't encrypted at rest.",
+      "impact": "Data will be readable if compromised",
+      "resolution": "Enable ElasticSearch domain encryption",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS031/"
+    },
+    {
+      "code": "AWS032",
+      "provider": "aws",
+      "description": "Elasticsearch domain uses plaintext traffic for node to node communication.",
+      "impact": "In transit data between nodes could be read if intercepted",
+      "resolution": "Enable encrypted node to node communication",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS032/"
+    },
+    {
+      "code": "AWS033",
+      "provider": "aws",
+      "description": "Elasticsearch doesn't enforce HTTPS traffic.",
+      "impact": "HTTP traffic can be intercepted and the contents read",
+      "resolution": "Enforce the use of HTTPS for ElasticSearch",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS033/"
+    },
+    {
+      "code": "AWS034",
+      "provider": "aws",
+      "description": "Elasticsearch domain endpoint is using outdated TLS policy.",
+      "impact": "Outdated SSL policies increase exposure to known vulnerabilites",
+      "resolution": "Use the most modern TLS/SSL policies available",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS034/"
+    },
+    {
+      "code": "AWS035",
+      "provider": "aws",
+      "description": "Unencrypted Elasticache Replication Group.",
+      "impact": "Data in the replication group could be readable if compromised",
+      "resolution": "Enable encryption for replication group",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS035/"
+    },
+    {
+      "code": "AWS036",
+      "provider": "aws",
+      "description": "Elasticache Replication Group uses unencrypted traffic.",
+      "impact": "In transit data in the Replication Group could be read if intercepted",
+      "resolution": "Enable in transit encryptuon for replication group",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS036/"
+    },
+    {
+      "code": "AWS037",
+      "provider": "aws",
+      "description": "IAM Password policy should prevent password reuse.",
+      "impact": "Password reuse increase the risk of compromised passwords being abused",
+      "resolution": "Prevent password reuse in the policy",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS037/"
+    },
+    {
+      "code": "AWS038",
+      "provider": "aws",
+      "description": "IAM Password policy should have expiry less than or equal to 90 days.",
+      "impact": "Long life password increase the likelihood of a password eventually being compromised",
+      "resolution": "Limit the password duration with an expiry in the policy",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS038/"
+    },
+    {
+      "code": "AWS039",
+      "provider": "aws",
+      "description": "IAM Password policy should have minimum password length of 14 or more characters.",
+      "impact": "Short, simple passwords are easier to compromise",
+      "resolution": "Enforce longer, more complex passwords in the policy",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS039/"
+    },
+    {
+      "code": "AWS040",
+      "provider": "aws",
+      "description": "IAM Password policy should have requirement for at least one symbol in the password.",
+      "impact": "Short, simple passwords are easier to compromise",
+      "resolution": "Enforce longer, more complex passwords in the policy",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS040/"
+    },
+    {
+      "code": "AWS041",
+      "provider": "aws",
+      "description": "IAM Password policy should have requirement for at least one number in the password.",
+      "impact": "Short, simple passwords are easier to compromise",
+      "resolution": "Enforce longer, more complex passwords in the policy",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS041/"
+    },
+    {
+      "code": "AWS042",
+      "provider": "aws",
+      "description": "IAM Password policy should have requirement for at least one lowercase character.",
+      "impact": "Short, simple passwords are easier to compromise",
+      "resolution": "Enforce longer, more complex passwords in the policy",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS042/"
+    },
+    {
+      "code": "AWS043",
+      "provider": "aws",
+      "description": "IAM Password policy should have requirement for at least one uppercase character.",
+      "impact": "Short, simple passwords are easier to compromise",
+      "resolution": "Enforce longer, more complex passwords in the policy",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS043/"
+    },
+    {
+      "code": "AWS044",
+      "provider": "aws",
+      "description": "AWS provider has access credentials specified.",
+      "impact": "Exposing the credentials in the Terraform provider increases the risk of secret leakage",
+      "resolution": "Don't include access credentials in plain text",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS044/"
+    },
+    {
+      "code": "AWS045",
+      "provider": "aws",
+      "description": "CloudFront distribution does not have a WAF in front.",
+      "impact": "Complex web application attacks can more easily be performed without a WAF",
+      "resolution": "Enable WAF for the CloudFront distribution",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS045/"
+    },
+    {
+      "code": "AWS046",
+      "provider": "aws",
+      "description": "AWS IAM policy document has wildcard action statement.",
+      "impact": "IAM policies with wildcard actions allow more that is required",
+      "resolution": "Keep policy scope to the minimum that is required to be effective",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS046/"
+    },
+    {
+      "code": "AWS047",
+      "provider": "aws",
+      "description": "AWS SQS policy document has wildcard action statement.",
+      "impact": "SQS policies with wildcard actions allow more that is required",
+      "resolution": "Keep policy scope to the minimum that is required to be effective",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS047/"
+    },
+    {
+      "code": "AWS048",
+      "provider": "aws",
+      "description": "EFS Encryption has not been enabled",
+      "impact": "Data can be read from the EFS if compromised",
+      "resolution": "Enable encryption for EFS",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS048/"
+    },
+    {
+      "code": "AWS049",
+      "provider": "aws",
+      "description": "An ingress Network ACL rule allows specific ports from /0.",
+      "impact": "The ports are exposed for ingressing data to the internet",
+      "resolution": "Set a more restrictive cidr range",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS049/"
+    },
+    {
+      "code": "AWS050",
+      "provider": "aws",
+      "description": "An ingress Network ACL rule allows ALL ports from /0.",
+      "impact": "All ports exposed for egressing data to the internet",
+      "resolution": "Set a more restrictive cidr range",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS050/"
+    },
+    {
+      "code": "AWS051",
+      "provider": "aws",
+      "description": "There is no encryption specified or encryption is disabled on the RDS Cluster.",
+      "impact": "Data can be read from the RDS cluster if it is compromised",
+      "resolution": "Enable encryption for RDS clusters and instances",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS051/"
+    },
+    {
+      "code": "AWS052",
+      "provider": "aws",
+      "description": "RDS encryption has not been enabled at a DB Instance level.",
+      "impact": "Data can be read from the RDS instances if it is compromised",
+      "resolution": "Enable encryption for RDS clusters and instances",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS052/"
+    },
+    {
+      "code": "AWS053",
+      "provider": "aws",
+      "description": "Encryption for RDS Perfomance Insights should be enabled.",
+      "impact": "Data can be read from the RDS Performance Insights if it is compromised",
+      "resolution": "Enable encryption for RDS clusters and instances",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS053/"
+    },
+    {
+      "code": "AWS057",
+      "provider": "aws",
+      "description": "Domain logging should be enabled for Elastic Search domains",
+      "impact": "Logging provides vital information about access and usage",
+      "resolution": "Enable logging for ElasticSearch domains",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS057/"
+    },
+    {
+      "code": "AWS058",
+      "provider": "aws",
+      "description": "Ensure that lambda function permission has a source arn specified",
+      "impact": "Not providing the source ARN allows any resource from principal, even from other accounts",
+      "resolution": "Always provide a source arn for Lambda permissions",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS058/"
+    },
+    {
+      "code": "AWS059",
+      "provider": "aws",
+      "description": "Athena databases and workgroup configurations are created unencrypted at rest by default, they should be encrypted",
+      "impact": "Data can be read if the Athena Database is compromised",
+      "resolution": "Enable encryption at rest for Athena databases and workgroup configurations",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS059/"
+    },
+    {
+      "code": "AWS060",
+      "provider": "aws",
+      "description": "Athena workgroups should enforce configuration to prevent client disabling encryption",
+      "impact": "Clients can ginore encryption requirements",
+      "resolution": "Enforce the configuration to prevent client overrides",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS060/"
+    },
+    {
+      "code": "AWS061",
+      "provider": "aws",
+      "description": "API Gateway stages for V1 and V2 should have access logging enabled",
+      "impact": "Logging provides vital information about access and usage",
+      "resolution": "Enable logging for API Gateway stages",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS061/"
+    },
+    {
+      "code": "AWS062",
+      "provider": "aws",
+      "description": "User data for EC2 instances must not contain sensitive AWS keys",
+      "impact": "User data is visible through the AWS Management console",
+      "resolution": "Remove sensitive data from the EC2 instance user-data",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS062/"
+    },
+    {
+      "code": "AWS063",
+      "provider": "aws",
+      "description": "Cloudtrail should be enabled in all regions regardless of where your AWS resources are generally homed",
+      "impact": "Activity could be happening in your account in a different region",
+      "resolution": "Enable Cloudtrail in all regions",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS063/"
+    },
+    {
+      "code": "AWS064",
+      "provider": "aws",
+      "description": "Cloudtrail log validation should be enabled to prevent tampering of log data",
+      "impact": "Illicit activity could be removed from the logs",
+      "resolution": "Turn on log validation for Cloudtrail",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS064/"
+    },
+    {
+      "code": "AWS065",
+      "provider": "aws",
+      "description": "Cloudtrail should be encrypted at rest to secure access to sensitive trail data",
+      "impact": "Data can be freely read if compromised",
+      "resolution": "Enable encryption at rest",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS065/"
+    },
+    {
+      "code": "AWS066",
+      "provider": "aws",
+      "description": "EKS should have the encryption of secrets enabled",
+      "impact": "EKS secrets could be read if compromised",
+      "resolution": "Enable encryption of EKS secrets",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS066/"
+    },
+    {
+      "code": "AWS067",
+      "provider": "aws",
+      "description": "EKS Clusters should have cluster control plane logging turned on",
+      "impact": "Logging provides valuable information about access and usage",
+      "resolution": "Enable logging for the EKS control plane",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS067/"
+    },
+    {
+      "code": "AWS068",
+      "provider": "aws",
+      "description": "EKS cluster should not have open CIDR range for public access",
+      "impact": "EKS can be access from the internet",
+      "resolution": "Don't enable public access to EKS Clusters",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS068/"
+    },
+    {
+      "code": "AWS069",
+      "provider": "aws",
+      "description": "EKS Clusters should have the public access disabled",
+      "impact": "EKS can be access from the internet",
+      "resolution": "Don't enable public access to EKS Clusters",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS069/"
+    },
+    {
+      "code": "AWS070",
+      "provider": "aws",
+      "description": "AWS ES Domain should have logging enabled",
+      "impact": "Logging provides vital information about access and usage",
+      "resolution": "Enable logging for ElasticSearch domains",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS070/"
+    },
+    {
+      "code": "AWS071",
+      "provider": "aws",
+      "description": "Cloudfront distribution should have Access Logging configured",
+      "impact": "Logging provides vital information about access and usage",
+      "resolution": "Enable logging for CloudFront distributions",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS071/"
+    },
+    {
+      "code": "AWS072",
+      "provider": "aws",
+      "description": "Viewer Protocol Policy in Cloudfront Distribution Cache should always be set to HTTPS",
+      "impact": "HTTP traffic can be read if intercepted",
+      "resolution": "Only use HTTPS in the Viewer Protocol Policy",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS072/"
+    },
+    {
+      "code": "AWS073",
+      "provider": "aws",
+      "description": "S3 Access Block should Ignore Public Acl",
+      "impact": "PUT calls with public ACLs specified can make objects public",
+      "resolution": "Enable ignoring the application of public ACLs in PUT calls",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS073/"
+    },
+    {
+      "code": "AWS074",
+      "provider": "aws",
+      "description": "S3 Access block should block public ACL",
+      "impact": "PUT calls with public ACLs specified can make objects public",
+      "resolution": "Enable blocking any PUT calls with a public ACL specified",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS074/"
+    },
+    {
+      "code": "AWS075",
+      "provider": "aws",
+      "description": "S3 Access block should restrict public bucket to limit access",
+      "impact": "Public buckets can be accessed by anyone",
+      "resolution": "Limit the access to public buckets to only the owner or AWS Services (eg; CloudFront)",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS075/"
+    },
+    {
+      "code": "AWS076",
+      "provider": "aws",
+      "description": "S3 Access block should block public policy",
+      "impact": "Users could put a policy that allows public access",
+      "resolution": "Prevent policies that allow public access being PUT",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS076/"
+    },
+    {
+      "code": "AWS077",
+      "provider": "aws",
+      "description": "S3 Data should be versioned",
+      "impact": "Deleted or modified data would not be recoverable",
+      "resolution": "Enable versioning to protect against accidental/malicious removal or modification",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS077/"
+    },
+    {
+      "code": "AWS078",
+      "provider": "aws",
+      "description": "ECR images tags shouldn't be mutable.",
+      "impact": "Image tags could be overwritten with compromised images",
+      "resolution": "Only use immutable images in ECR",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS078/"
+    },
+    {
+      "code": "AWS079",
+      "provider": "aws",
+      "description": "aws_instance should activate session tokens for Instance Metadata Service.",
+      "impact": "Instance metadata service can be interacted with freely",
+      "resolution": "Enable HTTP token requirement for IMDS",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS079/"
+    },
+    {
+      "code": "AWS080",
+      "provider": "aws",
+      "description": "CodeBuild Project artifacts encryption should not be disabled",
+      "impact": "CodeBuild project artifacts are unencrypted",
+      "resolution": "Enable encryption for CodeBuild project artifacts",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS080/"
+    },
+    {
+      "code": "AWS081",
+      "provider": "aws",
+      "description": "DAX Cluster should always encrypt data at rest",
+      "impact": "Data can be freely read if compromised",
+      "resolution": "Enable encryption at rest for DAX Cluster",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS081/"
+    },
+    {
+      "code": "AWS082",
+      "provider": "aws",
+      "description": "It is AWS best practice to not use the default VPC for workflows",
+      "impact": "The default VPC does not have critical security features applied",
+      "resolution": "Create a non-default vpc for resources to be created in",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS082/"
+    },
+    {
+      "code": "AWS083",
+      "provider": "aws",
+      "description": "Load balancers should drop invalid headers",
+      "impact": "Invalid headers being passed through to the target of the load balance may exploit vulnerabilities",
+      "resolution": "Set drop_invalid_header_fields to true",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS083/"
+    },
+    {
+      "code": "AWS084",
+      "provider": "aws",
+      "description": "Root and user volumes on Workspaces should be encrypted",
+      "impact": "Data can be freely read if compromised",
+      "resolution": "Root and user volume encryption should be enabled",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS084/"
+    },
+    {
+      "code": "AZU001",
+      "provider": "azure",
+      "description": "An inbound network security rule allows traffic from /0.",
+      "impact": "The port is exposed for ingress from the internet",
+      "resolution": "Set a more restrictive cidr range",
+      "doc_url": "https://tfsec.dev/docs/azure/AZU001/"
+    },
+    {
+      "code": "AZU002",
+      "provider": "azure",
+      "description": "An outbound network security rule allows traffic to /0.",
+      "impact": "The port is exposed for egress to the internet",
+      "resolution": "Set a more restrictive cidr range",
+      "doc_url": "https://tfsec.dev/docs/azure/AZU002/"
+    },
+    {
+      "code": "AZU003",
+      "provider": "azure",
+      "description": "Unencrypted managed disk.",
+      "impact": "Data could be read if compromised",
+      "resolution": "Enable encryption on managed disks",
+      "doc_url": "https://tfsec.dev/docs/azure/AZU003/"
+    },
+    {
+      "code": "AZU004",
+      "provider": "azure",
+      "description": "Unencrypted data lake storage.",
+      "impact": "Data could be read if compromised",
+      "resolution": "Enable encryption of data lake storage",
+      "doc_url": "https://tfsec.dev/docs/azure/AZU004/"
+    },
+    {
+      "code": "AZU005",
+      "provider": "azure",
+      "description": "Password authentication in use instead of SSH keys.",
+      "impact": "Passwords are potentially easier to compromise than SSH Keys",
+      "resolution": "Use SSH keys for authentication",
+      "doc_url": "https://tfsec.dev/docs/azure/AZU005/"
+    },
+    {
+      "code": "AZU006",
+      "provider": "azure",
+      "description": "Ensure AKS cluster has Network Policy configured",
+      "impact": "No network policy is protecting the AKS cluster",
+      "resolution": "Configure a network policy",
+      "doc_url": "https://tfsec.dev/docs/azure/AZU006/"
+    },
+    {
+      "code": "AZU007",
+      "provider": "azure",
+      "description": "Ensure RBAC is enabled on AKS clusters",
+      "impact": "No role based access control is in place for the AKS cluster",
+      "resolution": "Enable RBAC",
+      "doc_url": "https://tfsec.dev/docs/azure/AZU007/"
+    },
+    {
+      "code": "AZU008",
+      "provider": "azure",
+      "description": "Ensure AKS has an API Server Authorized IP Ranges enabled",
+      "impact": "Any IP can interact with the API server",
+      "resolution": "Limit the access to the API server to a limited IP range",
+      "doc_url": "https://tfsec.dev/docs/azure/AZU008/"
+    },
+    {
+      "code": "AZU009",
+      "provider": "azure",
+      "description": "Ensure AKS logging to Azure Monitoring is Configured",
+      "impact": "Logging provides valuable information about access and usage",
+      "resolution": "Enable logging for AKS",
+      "doc_url": "https://tfsec.dev/docs/azure/AZU009/"
+    },
+    {
+      "code": "AZU010",
+      "provider": "azure",
+      "description": "Ensure HTTPS is enabled on Azure Storage Account",
+      "impact": "HTTP access to storage account could be read if intercepted",
+      "resolution": "Only use HTTPS for storage account",
+      "doc_url": "https://tfsec.dev/docs/azure/AZU010/"
+    },
+    {
+      "code": "AZU011",
+      "provider": "azure",
+      "description": "Storage containers in blob storage mode should not have public access",
+      "impact": "Data in the storage container could be exposed publically",
+      "resolution": "Disable public access to storage containers",
+      "doc_url": "https://tfsec.dev/docs/azure/AZU011/"
+    },
+    {
+      "code": "AZU012",
+      "provider": "azure",
+      "description": "The default action on Storage account network rules should be set to deny",
+      "impact": "Network rules that allow could cause data to be exposed publically",
+      "resolution": "Set network rules to deny",
+      "doc_url": "https://tfsec.dev/docs/azure/AZU012/"
+    },
+    {
+      "code": "AZU013",
+      "provider": "azure",
+      "description": "Trusted Microsoft Services should have bypass access to Storage accounts",
+      "impact": "Trusted Microsoft Services won't be able to access storage account unless rules set to allow",
+      "resolution": "Allow Trusted Microsoft Services to bypass",
+      "doc_url": "https://tfsec.dev/docs/azure/AZU013/"
+    },
+    {
+      "code": "AZU014",
+      "provider": "azure",
+      "description": "Storage accounts should be configured to only accept transfers that are over secure connections",
+      "impact": "Insecure transfer of data into secure accounts could be read if intercepted",
+      "resolution": "Only allow secure connection for transfering data into storage accounts",
+      "doc_url": "https://tfsec.dev/docs/azure/AZU014/"
+    },
+    {
+      "code": "AZU015",
+      "provider": "azure",
+      "description": "The minimum TLS version for Storage Accounts should be TLS1_2",
+      "impact": "The TLS version being outdated and has known vulnerabilities",
+      "resolution": "Use a more recent TLS/SSL policy for the load balancer",
+      "doc_url": "https://tfsec.dev/docs/azure/AZU015/"
+    },
+    {
+      "code": "AZU016",
+      "provider": "azure",
+      "description": "When using Queue Services for a storage account, logging should be enabled.",
+      "impact": "Logging provides valuable information about access and usage",
+      "resolution": "Enable logging for Queue Services",
+      "doc_url": "https://tfsec.dev/docs/azure/AZU016/"
+    },
+    {
+      "code": "AZU017",
+      "provider": "azure",
+      "description": "SSH access should not be accessible from the Internet, should be blocked on port 22",
+      "impact": "Its dangerous to allow SSH access from the internet",
+      "resolution": "Block port 22 access from the internet",
+      "doc_url": "https://tfsec.dev/docs/azure/AZU017/"
+    },
+    {
+      "code": "AZU018",
+      "provider": "azure",
+      "description": "Auditing should be enabled on Azure SQL Databases",
+      "impact": "Auditing provides valuable information about access and usage",
+      "resolution": "Enable auditing on Azure SQL databases",
+      "doc_url": "https://tfsec.dev/docs/azure/AZU018/"
+    },
+    {
+      "code": "AZU019",
+      "provider": "azure",
+      "description": "Database auditing rentention period should be longer than 90 days",
+      "impact": "Short logging retention could result in missing valuable historical information",
+      "resolution": "Set retention periods of database auditing to greater than 90 days",
+      "doc_url": "https://tfsec.dev/docs/azure/AZU019/"
+    },
+    {
+      "code": "AZU020",
+      "provider": "azure",
+      "description": "Key vault should have the network acl block specified",
+      "impact": "Without a network ACL the key vault is freely accessible",
+      "resolution": "Set a network ACL for the key vault",
+      "doc_url": "https://tfsec.dev/docs/azure/AZU020/"
+    },
+    {
+      "code": "AZU021",
+      "provider": "azure",
+      "description": "Key vault should have purge protection enabled",
+      "impact": "Keys could be purged from the vault without protection",
+      "resolution": "Enable purge protection for key vaults",
+      "doc_url": "https://tfsec.dev/docs/azure/AZU021/"
+    },
+    {
+      "code": "AZU022",
+      "provider": "azure",
+      "description": "Key vault Secret should have a content type set",
+      "impact": "The secret's type is unclear without a content type",
+      "resolution": "Provide content type for secrets to aid interpretation on retrieval",
+      "doc_url": "https://tfsec.dev/docs/azure/AZU022/"
+    },
+    {
+      "code": "AZU023",
+      "provider": "azure",
+      "description": "Key Vault Secret should have an expiration date set",
+      "impact": "Long life secrets increase the opportunity for compromise",
+      "resolution": "Set an expiry for secrets",
+      "doc_url": "https://tfsec.dev/docs/azure/AZU023/"
+    },
+    {
+      "code": "AZU024",
+      "provider": "azure",
+      "description": "RDP access should not be accessible from the Internet, should be blocked on port 3389",
+      "impact": "Anyone from the internet can potentially RDP onto an instance",
+      "resolution": "Block RDP port from internet",
+      "doc_url": "https://tfsec.dev/docs/azure/AZU024/"
+    },
+    {
+      "code": "AZU025",
+      "provider": "azure",
+      "description": "Data Factory should have public access disabled, the default is enabled.",
+      "impact": "Data factory is publicly accessible",
+      "resolution": "Set public access to disabled for Data Factory",
+      "doc_url": "https://tfsec.dev/docs/azure/AZU025/"
+    },
+    {
+      "code": "AZU026",
+      "provider": "azure",
+      "description": "Ensure that the expiration date is set on all keys",
+      "impact": "Long life keys increase the attack surface when compromised",
+      "resolution": "Set an expiration date on the vault key",
+      "doc_url": "https://tfsec.dev/docs/azure/AZU026/"
+    },
+    {
+      "code": "AZU027",
+      "provider": "azure",
+      "description": "Synapse Workspace should have managed virtual network enabled, the default is disabled.",
+      "impact": "Your Synapse workspace is not using the private endpoints",
+      "resolution": "Set manage virtual network to enabled",
+      "doc_url": "https://tfsec.dev/docs/azure/AZU027/"
+    },
+    {
+      "code": "AZU028",
+      "provider": "azure",
+      "description": "Ensure the Function App can only be accessed via HTTPS. The default is false.",
+      "impact": "Anyone can access the Function App using HTTP.",
+      "resolution": "You can redirect all HTTP requests to the HTTPS port.",
+      "doc_url": "https://tfsec.dev/docs/azure/AZU028/"
+    },
+    {
+      "code": "GCP001",
+      "provider": "google",
+      "description": "Unencrypted compute disk.",
+      "impact": "Data could be readable if compromised",
+      "resolution": "Enable encrytion for compute disks",
+      "doc_url": "https://tfsec.dev/docs/google/GCP001/"
+    },
+    {
+      "code": "GCP003",
+      "provider": "google",
+      "description": "An inbound firewall rule allows traffic from /0.",
+      "impact": "The port is exposed for ingress from the internet",
+      "resolution": "Set a more restrictive cidr range",
+      "doc_url": "https://tfsec.dev/docs/google/GCP003/"
+    },
+    {
+      "code": "GCP004",
+      "provider": "google",
+      "description": "An outbound firewall rule allows traffic to /0.",
+      "impact": "The port is exposed for egress to the internet",
+      "resolution": "Set a more restrictive cidr range",
+      "doc_url": "https://tfsec.dev/docs/google/GCP004/"
+    },
+    {
+      "code": "GCP005",
+      "provider": "google",
+      "description": "Legacy ABAC permissions are enabled.",
+      "impact": "ABAC permissions are less secure than RBAC permissions",
+      "resolution": "Switch to using RBAC permissions",
+      "doc_url": "https://tfsec.dev/docs/google/GCP005/"
+    },
+    {
+      "code": "GCP006",
+      "provider": "google",
+      "description": "Node metadata value disables metadata concealment.",
+      "impact": "Metadata that isn't concealed potentially risks leakage of sensitive data",
+      "resolution": "Set node metadata to SECURE or GKE_METADATA_SERVER",
+      "doc_url": "https://tfsec.dev/docs/google/GCP006/"
+    },
+    {
+      "code": "GCP007",
+      "provider": "google",
+      "description": "Legacy metadata endpoints enabled.",
+      "impact": "Legacy metadata endpoints don't require metadata headers",
+      "resolution": "Disable legacy metadata endpoints",
+      "doc_url": "https://tfsec.dev/docs/google/GCP007/"
+    },
+    {
+      "code": "GCP008",
+      "provider": "google",
+      "description": "Legacy client authentication methods utilized.",
+      "impact": "Username and password authentication methods are less secure",
+      "resolution": "Use service account or OAuth for authentication",
+      "doc_url": "https://tfsec.dev/docs/google/GCP008/"
+    },
+    {
+      "code": "GCP009",
+      "provider": "google",
+      "description": "Pod security policy enforcement not defined.",
+      "impact": "Pods could be operating with more permissions than required to be effective",
+      "resolution": "Use security policies for pods to restrict permissions to those needed to be effective",
+      "doc_url": "https://tfsec.dev/docs/google/GCP009/"
+    },
+    {
+      "code": "GCP010",
+      "provider": "google",
+      "description": "Shielded GKE nodes not enabled.",
+      "impact": "Node identity and integrity can't be verified without shielded GKE nodes",
+      "resolution": "Enable node shielding",
+      "doc_url": "https://tfsec.dev/docs/google/GCP010/"
+    },
+    {
+      "code": "GCP011",
+      "provider": "google",
+      "description": "IAM granted directly to user.",
+      "impact": "Users shouldn't have permissions granted to them directly",
+      "resolution": "Roles should be granted permissions and assigned to users",
+      "doc_url": "https://tfsec.dev/docs/google/GCP011/"
+    },
+    {
+      "code": "GCP012",
+      "provider": "google",
+      "description": "Checks for service account defined for GKE nodes",
+      "impact": "Service accounts with wide permissions can increase the risk of compromise",
+      "resolution": "Use limited permissions for service accounts to be effective",
+      "doc_url": "https://tfsec.dev/docs/google/GCP012/"
+    },
+    {
+      "code": "GEN001",
+      "provider": "general",
+      "description": "Potentially sensitive data stored in \"default\" value of variable.",
+      "impact": "Default values could be exposing sensitive data",
+      "resolution": "Don't include sensitive data in variable defaults",
+      "doc_url": "https://tfsec.dev/docs/general/GEN001/"
+    },
+    {
+      "code": "GEN002",
+      "provider": "general",
+      "description": "Potentially sensitive data stored in local value.",
+      "impact": "Local value could be leaking secrets",
+      "resolution": "Don't include sensitive data in locals",
+      "doc_url": "https://tfsec.dev/docs/general/GEN002/"
+    },
+    {
+      "code": "GEN003",
+      "provider": "general",
+      "description": "Potentially sensitive data stored in block attribute.",
+      "impact": "Block attribute could be leaking secrets",
+      "resolution": "Don't include sensitive data in blocks",
+      "doc_url": "https://tfsec.dev/docs/general/GEN003/"
+    },
+    {
+      "code": "GEN004",
+      "provider": "general",
+      "description": "Github repository shouldn't be public.",
+      "impact": "Anyone can read the contents of the GitHub repository and leak IP",
+      "resolution": "Make sensitive or commercially importnt repositories private",
+      "doc_url": "https://tfsec.dev/docs/general/GEN004/"
+    }
+  ]
+}

@@ -2,8 +2,8 @@
   "name": "tfsec",
   "displayName": "tfsec",
   "publisher": "tfsec",
-  "description": "tfsec integration for VSCode",
-  "version": "1.1.4",
+  "description": "Tfsec integration for Visual Studio Code",
+  "version": "1.1.7",
   "engines": {
     "vscode": "^1.54.0"
   },
@@ -23,12 +23,12 @@
         "Terraform"
       ]
     }
-  ],
+  ],  
   "activationEvents": [
-    "onView:tfsec-issues",
+    "onView:tfsec.issueview",
     "onLanguage:terraform",
-    "onCommand:tfsec.runTfsec",
-    "*"
+    "onCommand:tfsec.run",
+    "onCommand:tfsec.refresh"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -49,12 +49,22 @@
           "type": "boolean",
           "default": "true",
           "description": "Scan all terraform in the workspace. This will start at the top and add all terraform files into the model"
+        },
+        "tfsec.resolveIgnoreCodes": {
+          "type": "boolean",
+          "default": "true",
+          "description": "Add the description for ignore codes inline with the code"
+        },
+        "tfsec.runOnIgnore": {
+          "type": "boolean",
+          "default": "true",
+          "description": "Automatically rerun tfsec when a check failure is ignored"
         }
       }
     },
     "commands": [
       {
-        "command": "tfsec.runTfsec",
+        "command": "tfsec.run",
         "title": "tfsec: Run tfsec against workspace",
         "icon": {
           "light": "resources/light/run.svg",
@@ -72,10 +82,6 @@
       {
         "command": "tfsec.ignore",
         "title": "Ignore this issue"
-      },
-      {
-        "command": "tfsec.viewCheck",
-        "title": "View check details"
       }
     ],
     "viewsContainers": {
@@ -90,17 +96,24 @@
     "views": {
       "tfsec": [
         {
-          "id": "tfsec-issues",
-          "name": "tfsec Explorer",
+          "id": "tfsec.issueview",
+          "name": "Issue Explorer",
           "icon": "media/tfsec.svg",
           "contextualTitle": "Issue Explorer"
+        },
+        {
+          "id": "tfsec.helpview",
+          "name": "Check Help",
+          "type": "webview",
+          "contextualTitle": "Issue Help",
+          "visibility": "collapsed"
         }
       ]
     },
     "viewsWelcome": [
       {
-        "view": "tfsec-issues",
-        "contents": "No issues are found.\n[Run tfsec now](command:tfsec.runTfsec)"
+        "view": "tfsec.issueview",
+        "contents": "No issues are found.\n[Run tfsec now](command:tfsec.run)"
       }
     ],
     "menus": {
@@ -112,24 +125,20 @@
       ],
       "view/title": [
         {
-          "command": "tfsec.runTfsec",
-          "when": "view == tfsec-issues",
+          "command": "tfsec.run",
+          "when": "view == tfsec.issueview",
           "group": "navigation@1"
         },
         {
           "command": "tfsec.refresh",
-          "when": "view == tfsec-issues",
+          "when": "view == tfsec.issueview",
           "group": "navigation@2"
         }
       ],
       "view/item/context": [
         {
           "command": "tfsec.ignore",
-          "when": "view == tfsec-issues && viewItem == TFSEC_FILE_LOCATION"
-        },
-        {
-          "command": "tfsec.viewCheck",
-          "when": "view == tfsec-issues && viewItem == TFSEC_CODE"
+          "when": "view == tfsec.issueview && viewItem == TFSEC_FILE_LOCATION"
         }
       ]
     }

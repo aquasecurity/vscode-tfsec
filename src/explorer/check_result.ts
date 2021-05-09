@@ -1,12 +1,10 @@
-export class ResultData {
-
+export class CheckResult {
 	public code: string;
 	public provider: string;
 	public codeDescription: string;
 	public filename: string;
 	public startLine: number;
 	public endLine: number;
-
 	constructor(
 		private result: any
 	) {
