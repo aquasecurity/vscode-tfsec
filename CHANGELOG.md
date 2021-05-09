@@ -2,6 +2,9 @@
 
 All notable changes to the "tfsec" extension will be documented in this file.
 
+### 1.1.8
+- Add setting to choose if auto running tfsec after ignore should happen
+
 ### 1.1.7
 - Reload the tree when tfsec is run
 - move single line ignores above issue
