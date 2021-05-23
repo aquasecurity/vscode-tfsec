@@ -25,6 +25,12 @@ Ignore codes will be automatically resolved and the description of the error wil
 
 ## Release Notes
 
+### 1.1.10
+- Updating the codes to support latest tfsec
+
+### 1.1.9
+- Handle deprecated checks better in the help window
+
 ### 1.1.8
 - Add setting to choose if auto running tfsec after ignore should happen
 

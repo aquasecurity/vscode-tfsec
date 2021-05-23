@@ -3,7 +3,7 @@
   "displayName": "tfsec",
   "publisher": "tfsec",
   "description": "Tfsec integration for Visual Studio Code",
-  "version": "1.1.8",
+  "version": "1.1.10",
   "engines": {
     "vscode": "^1.54.0"
   },
@@ -114,6 +114,10 @@
       {
         "view": "tfsec.issueview",
         "contents": "No issues are found.\n[Run tfsec now](command:tfsec.run)"
+      },
+      {
+        "view": "tfsec.helpview",
+        "contents": "No check selected. Run tfsec and choose a failed check from the explorer"
       }
     ],
     "menus": {

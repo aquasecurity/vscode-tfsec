@@ -2,6 +2,12 @@
 
 All notable changes to the "tfsec" extension will be documented in this file.
 
+### 1.1.10
+- Updating the codes to support latest tfsec
+
+### 1.1.9
+- Handle deprecated checks better in the help window
+
 ### 1.1.8
 - Add setting to choose if auto running tfsec after ignore should happen
 

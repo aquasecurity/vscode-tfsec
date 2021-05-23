@@ -1,4 +1,5 @@
 import { DH_CHECK_P_NOT_PRIME } from "node:constants";
+import { threadId } from "node:worker_threads";
 import { CancellationToken, Webview, WebviewView, WebviewViewProvider, WebviewViewResolveContext } from "vscode";
 import { CheckManager } from "../check_manager";
 import { TfSecCheck } from "../tfsec_check";
@@ -20,7 +21,11 @@ export class TfsecHelpProvider implements WebviewViewProvider {
             return ;
         }
         const codeData = CheckManager.getInstance().get(item.code);
-        if (codeData === null) {
+        if (codeData === undefined) {
+            this.view.html = `
+<h2>No check data available</h2>
+This check may no longer be valid. Check your tfsec is the latest version.
+`
             return;
         }
 
@@ -29,7 +34,7 @@ export class TfsecHelpProvider implements WebviewViewProvider {
 }
 
 function getHtml(codeData: TfSecCheck | undefined): string {
-    if (codeData === null) {
+    if (codeData === undefined) {
         return "";
     }
     return`
