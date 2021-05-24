@@ -3,7 +3,7 @@
   "displayName": "tfsec",
   "publisher": "tfsec",
   "description": "Tfsec integration for Visual Studio Code",
-  "version": "1.1.8",
+  "version": "1.1.11",
   "engines": {
     "vscode": "^1.54.0"
   },
@@ -23,7 +23,7 @@
         "Terraform"
       ]
     }
-  ],  
+  ],
   "activationEvents": [
     "onView:tfsec.issueview",
     "onLanguage:terraform",
@@ -73,15 +73,27 @@
       },
       {
         "command": "tfsec.refresh",
-        "title": "Refresh the issue list",
+        "title": "tfsec: Refresh the issue list",
         "icon": {
           "light": "resources/light/refresh.svg",
           "dark": "resources/dark/refresh.svg"
         }
       },
       {
+        "command": "tfsec.updatebinary",
+        "title": "tfsec: Download the latest version of tfsec",
+        "icon": {
+          "light": "resources/light/download.svg",
+          "dark": "resources/dark/download.svg"
+        }
+      },
+      {
         "command": "tfsec.ignore",
         "title": "Ignore this issue"
+      },
+      {
+        "command": "tfsec.version",
+        "title": "tfsec: Get the current version of tfsec"
       }
     ],
     "viewsContainers": {
@@ -114,6 +126,10 @@
       {
         "view": "tfsec.issueview",
         "contents": "No issues are found.\n[Run tfsec now](command:tfsec.run)"
+      },
+      {
+        "view": "tfsec.helpview",
+        "contents": "No check selected. Run tfsec and choose a failed check from the explorer"
       }
     ],
     "menus": {
@@ -133,6 +149,11 @@
           "command": "tfsec.refresh",
           "when": "view == tfsec.issueview",
           "group": "navigation@2"
+        },
+        {
+          "command": "tfsec.updatebinary",
+          "when": "view == tfsec.issueview",
+          "group": "navigation@3"
         }
       ],
       "view/item/context": [
@@ -152,13 +173,14 @@
   "devDependencies": {
     "@types/glob": "^7.1.3",
     "@types/mocha": "^8.0.4",
-    "@types/node": "^12.20.7",
+    "@types/node": "^12.20.13",
+    "@types/semver": "^7.3.6",
     "@types/vscode": "^1.54.0",
-    "@typescript-eslint/eslint-plugin": "^4.14.1",
-    "@typescript-eslint/parser": "^4.14.1",
-    "eslint": "^7.19.0",
-    "glob": "^7.1.6",
-    "mocha": "^8.2.1",
+    "@typescript-eslint/eslint-plugin": "^4.25.0",
+    "@typescript-eslint/parser": "^4.25.0",
+    "eslint": "^7.27.0",
+    "glob": "^7.1.7",
+    "mocha": "^8.4.0",
     "typescript": "^4.2.4",
     "vscode-test": "^1.5.0"
   },
@@ -166,6 +188,7 @@
     "url": "https://github.com/tfsec/vscode-tfsec"
   },
   "dependencies": {
+    "semver": "^7.3.5",
     "tsc": "^1.20150623.0",
     "typescipt": "^1.0.0"
   }

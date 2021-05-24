@@ -2,6 +2,16 @@
 
 All notable changes to the "tfsec" extension will be documented in this file.
 
+### 1.1.11
+- Add menu button to update tfsec from within vscode (post tfsec v0.39.39)
+- Add command to show the current version of tfsec running
+
+### 1.1.10
+- Updating the codes to support latest tfsec
+
+### 1.1.9
+- Handle deprecated checks better in the help window
+
 ### 1.1.8
 - Add setting to choose if auto running tfsec after ignore should happen
 

@@ -609,6 +609,118 @@
       "doc_url": "https://tfsec.dev/docs/aws/AWS084/"
     },
     {
+      "code": "AWS085",
+      "provider": "aws",
+      "description": "Config configuration aggregator should be using all regions for source",
+      "impact": "Sources that aren't covered by the aggregator are not include in the configuration",
+      "resolution": "Set the aggregator to cover all regions",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS085/"
+    },
+    {
+      "code": "AWS086",
+      "provider": "aws",
+      "description": "Point in time recovery should be enabled to protect DynamoDB table",
+      "impact": "Accidental or malicious writes and deletes can't be rolled back",
+      "resolution": "Enable point in time recovery",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS086/"
+    },
+    {
+      "code": "AWS087",
+      "provider": "aws",
+      "description": "Redshift cluster should be deployed into a specific VPC",
+      "impact": "Redshift cluster does not benefit from VPC security if it is deployed in EC2 classic mode",
+      "resolution": "Deploy Redshift cluster into a non default VPC",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS087/"
+    },
+    {
+      "code": "AWS088",
+      "provider": "aws",
+      "description": "Redis cluster should be backup retention turned on",
+      "impact": "Without backups of the redis cluster recovery is made difficult",
+      "resolution": "Configure snapshot retention for redis cluster",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS088/"
+    },
+    {
+      "code": "AWS089",
+      "provider": "aws",
+      "description": "CloudWatch log groups should be encrypted",
+      "impact": "Log data may be leaked if the logs are compromised",
+      "resolution": "Enable CMK encryption of CloudWatch Log Groups",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS089/"
+    },
+    {
+      "code": "AWS090",
+      "provider": "aws",
+      "description": "ECS clusters should have container insights enabled",
+      "impact": "Not all metrics and logs may be gathered for containers when Container Insights isn't enabled",
+      "resolution": "Enable Container Insights",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS090/"
+    },
+    {
+      "code": "AWS091",
+      "provider": "aws",
+      "description": "RDS Cluster and RDS instance should have backup retention longer than default 1 day",
+      "impact": "Potential loss of data and short opportunity for recovery",
+      "resolution": "Explicitly set the retention period to greater than the default",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS091/"
+    },
+    {
+      "code": "AWS092",
+      "provider": "aws",
+      "description": "DynamoDB tables should use at rest encyption with a Customer Managed Key",
+      "impact": "Using AWS managed keys does not allow for fine grained control",
+      "resolution": "Enable server side encrytion with a customer managed key",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS092/"
+    },
+    {
+      "code": "AWS093",
+      "provider": "aws",
+      "description": "ECR Repository should use customer managed keys to allow more control",
+      "impact": "Using AWS managed keys does not allow for fine grained control",
+      "resolution": "Use customer managed keys",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS093/"
+    },
+    {
+      "code": "AWS094",
+      "provider": "aws",
+      "description": "Redshift clusters should use at rest encryption",
+      "impact": "Data may be leaked if infrastructure is compromised",
+      "resolution": "Enable encryption using CMK",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS094/"
+    },
+    {
+      "code": "AWS095",
+      "provider": "aws",
+      "description": "Secrets Manager should use customer managed keys",
+      "impact": "Using AWS managed keys reduces the flexibility and control over the encryption key",
+      "resolution": "Use customer managed keys",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS095/"
+    },
+    {
+      "code": "AWS096",
+      "provider": "aws",
+      "description": "ECS Task Definitions with EFS volumes should use in-transit encryption",
+      "impact": "Intercepted traffic to and from EFS may lead to data loss",
+      "resolution": "Enable in transit encryption when using efs",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS096/"
+    },
+    {
+      "code": "AWS097",
+      "provider": "aws",
+      "description": "Document DB should be encrypted using customer managed keys",
+      "impact": "Not using customer managed keys removes the control over the used key. (rotation etc)",
+      "resolution": "Use a customer managed KMS key",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS097/"
+    },
+    {
+      "code": "AWS098",
+      "provider": "aws",
+      "description": "Where supported use EBS optimization",
+      "impact": "Not benefiting from the performance enhancements that come with EBS optimization",
+      "resolution": "Use EBS optimization",
+      "doc_url": "https://tfsec.dev/docs/aws/AWS098/"
+    },
+    {
       "code": "AZU001",
       "provider": "azure",
       "description": "An inbound network security rule allows traffic from /0.",

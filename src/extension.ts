@@ -2,8 +2,9 @@ import * as vscode from 'vscode';
 import { triggerDecoration} from './ignore_resolver';
 import { TfsecIssueProvider } from './explorer/issues_treeview';
 import { TfsecTreeItem } from './explorer/tfsec_treeitem';
-import { getOrCreateTfsecTerminal } from './utils';
+import { getOrCreateTfsecTerminal, getInstalledTfsecVersion } from './utils';
 import { TfsecHelpProvider } from './explorer/check_helpview';
+import * as semver from 'semver';
 
 // this method is called when vs code is activated
 export function activate(context: vscode.ExtensionContext) {
@@ -19,10 +20,15 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 	
 	issueTree.onDidChangeSelection(function(event) {
-		helpProvider.update(event.selection[0]);
+		const treeItem = event.selection[0];
+		if (treeItem) {
+			helpProvider.update(treeItem);
+		}
 	});
 
 	context.subscriptions.push(vscode.commands.registerCommand('tfsec.refresh', () => issueProvider.refresh()));
+
+	context.subscriptions.push(vscode.commands.registerCommand('tfsec.version', () => showCurrentTfsecVersion()));
 
 	context.subscriptions.push(vscode.commands.registerCommand('tfsec.ignore', (element: TfsecTreeItem) => {
 		vscode.workspace.openTextDocument(vscode.Uri.file(element.filename)).then((file: vscode.TextDocument) => {
@@ -54,6 +60,19 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	}));
 
+
+	context.subscriptions.push(vscode.commands.registerCommand("tfsec.updatebinary", () => {
+		const currentVersion = getInstalledTfsecVersion();
+
+		if (semver.lt(currentVersion, "0.39.39")) {
+			vscode.window.showInformationMessage(`Self updating was not introduced till v0.39.39 and you are running ${currentVersion}. Pleae update manually to at least v0.39.39`);
+		}
+
+		let terminal = getOrCreateTfsecTerminal();
+		terminal.hide();
+		terminal.sendText("tfsec --update");
+	}));
+
 	context.subscriptions.push(vscode.window.onDidChangeActiveTextEditor(editor => {
 		activeEditor = editor;
 		if (editor) {
@@ -69,6 +88,15 @@ export function activate(context: vscode.ExtensionContext) {
 
 	if (activeEditor) {
 		triggerDecoration();
+	}
+
+	showCurrentTfsecVersion();
+}
+
+function showCurrentTfsecVersion() {
+	const currentVersion = getInstalledTfsecVersion();
+	if (currentVersion) {
+		vscode.window.showInformationMessage(`Current tfsec version is ${currentVersion}`);	
 	}
 }
 
