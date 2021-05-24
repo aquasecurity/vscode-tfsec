@@ -25,6 +25,10 @@ Ignore codes will be automatically resolved and the description of the error wil
 
 ## Release Notes
 
+### 1.1.11
+- Add menu button to update tfsec from within vscode (post tfsec v0.39.39)
+- Add command to show the current version of tfsec running
+
 ### 1.1.10
 - Updating the codes to support latest tfsec
 

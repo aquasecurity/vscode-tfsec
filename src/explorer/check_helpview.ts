@@ -1,5 +1,3 @@
-import { DH_CHECK_P_NOT_PRIME } from "node:constants";
-import { threadId } from "node:worker_threads";
 import { CancellationToken, Webview, WebviewView, WebviewViewProvider, WebviewViewResolveContext } from "vscode";
 import { CheckManager } from "../check_manager";
 import { TfSecCheck } from "../tfsec_check";

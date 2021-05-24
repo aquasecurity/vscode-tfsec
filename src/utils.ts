@@ -1,5 +1,6 @@
 
 import * as vscode from 'vscode';
+import * as cp from 'child_process';
 import { TfsecTreeItem } from './explorer/tfsec_treeitem';
 
 const sortByCode = (a: TfsecTreeItem, b: TfsecTreeItem): number => {
@@ -54,4 +55,9 @@ const getOrCreateTfsecTerminal = () => {
 	return vscode.window.createTerminal("tfsec");
 };
 
-export { sortByCode, uniqueLocations, getOrCreateTfsecTerminal };
+const getInstalledTfsecVersion = () => {
+    const getVersion = cp.execSync("tfsec --version");
+    return getVersion.toString();
+};
+
+export { sortByCode, uniqueLocations, getOrCreateTfsecTerminal, getInstalledTfsecVersion };
