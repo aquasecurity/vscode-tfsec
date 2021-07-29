@@ -8,8 +8,8 @@ import { TfsecHelpProvider } from './check_helpview';
 
 export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem> {
 
-	private _onDidChangeTreeData: vscode.EventEmitter<TfsecTreeItem | undefined | void> = new vscode.EventEmitter<TfsecTreeItem | undefined | void>();
-	readonly onDidChangeTreeData: vscode.Event<TfsecTreeItem | undefined | void> = this._onDidChangeTreeData.event;
+	private _onDidChangeTreeData: vscode.EventEmitter<TfsecTreeItem | undefined | null> = new vscode.EventEmitter<TfsecTreeItem | undefined | null>();
+	readonly onDidChangeTreeData: vscode.Event<TfsecTreeItem | undefined | null> = this._onDidChangeTreeData.event;
 	private resultData: CheckResult[] = [];
 	private taintResults: boolean = true;
 	private rootpath: string = "";
@@ -63,7 +63,7 @@ export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem
 					this.taintResults = !this.taintResults;
 				}
 				catch {
-					console.debug(`Error loading results file ${this.resultsStoragePath}`)
+					console.debug(`Error loading results file ${this.resultsStoragePath}`);
 				}
 			}
 		} else {

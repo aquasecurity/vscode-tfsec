@@ -25,6 +25,9 @@ Ignore codes will be automatically resolved and the description of the error wil
 
 ## Release Notes
 
+### 1.1.12
+- Correct issue with ignore resolution when using expiries in the ignore code
+
 ### 1.1.11
 - Add menu button to update tfsec from within vscode (post tfsec v0.39.39)
 - Add command to show the current version of tfsec running

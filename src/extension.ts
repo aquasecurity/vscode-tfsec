@@ -1,10 +1,12 @@
 import * as vscode from 'vscode';
-import { triggerDecoration} from './ignore_resolver';
+import { triggerDecoration } from './ignore_resolver';
 import { TfsecIssueProvider } from './explorer/issues_treeview';
 import { TfsecTreeItem } from './explorer/tfsec_treeitem';
 import { getOrCreateTfsecTerminal, getInstalledTfsecVersion } from './utils';
 import { TfsecHelpProvider } from './explorer/check_helpview';
 import * as semver from 'semver';
+import * as path from 'path';
+import { existsSync } from 'fs';
 
 // this method is called when vs code is activated
 export function activate(context: vscode.ExtensionContext) {
@@ -18,18 +20,18 @@ export function activate(context: vscode.ExtensionContext) {
 	let issueTree = vscode.window.createTreeView("tfsec.issueview", {
 		treeDataProvider: issueProvider,
 	});
-	
-	issueTree.onDidChangeSelection(function(event) {
+
+	issueTree.onDidChangeSelection(function (event) {
 		const treeItem = event.selection[0];
 		if (treeItem) {
 			helpProvider.update(treeItem);
 		}
-	});
+	});// invalid js - yep! moped
 
+	const isGit = checkIfIsGit(context);
+	vscode.commands.executeCommand('setContext', 'tfsec.isgit', isGit);
 	context.subscriptions.push(vscode.commands.registerCommand('tfsec.refresh', () => issueProvider.refresh()));
-
 	context.subscriptions.push(vscode.commands.registerCommand('tfsec.version', () => showCurrentTfsecVersion()));
-
 	context.subscriptions.push(vscode.commands.registerCommand('tfsec.ignore', (element: TfsecTreeItem) => {
 		vscode.workspace.openTextDocument(vscode.Uri.file(element.filename)).then((file: vscode.TextDocument) => {
 			vscode.window.showTextDocument(file, 1, false).then(e => {
@@ -37,7 +39,7 @@ export function activate(context: vscode.ExtensionContext) {
 					if (element.startLineNumber === element.endLineNumber) {
 						let errorLine = vscode.window.activeTextEditor?.document.lineAt(element.startLineNumber);
 						if (errorLine !== null && errorLine !== undefined) {
-						edit.insert(new vscode.Position(errorLine.lineNumber-1, errorLine.firstNonWhitespaceCharacterIndex), `#tfsec:ignore:${element.code}\n`);
+							edit.insert(new vscode.Position(errorLine.lineNumber - 1, errorLine.firstNonWhitespaceCharacterIndex), `#tfsec:ignore:${element.code}\n`);
 						}
 					} else {
 						edit.insert(new vscode.Position(element.startLineNumber - 1, 0), `#tfsec:ignore:${element.code}\n`);
@@ -93,10 +95,19 @@ export function activate(context: vscode.ExtensionContext) {
 	showCurrentTfsecVersion();
 }
 
+function checkIfIsGit(context: vscode.ExtensionContext): boolean {
+	if (vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders[0] !== null) {
+		const gitPath = path.join(vscode.workspace.workspaceFolders[0].uri.fsPath, ".git");
+		return existsSync(gitPath);
+	}
+
+	return false;
+}
+
 function showCurrentTfsecVersion() {
 	const currentVersion = getInstalledTfsecVersion();
 	if (currentVersion) {
-		vscode.window.showInformationMessage(`Current tfsec version is ${currentVersion}`);	
+		vscode.window.showInformationMessage(`Current tfsec version is ${currentVersion}`);
 	}
 }
 

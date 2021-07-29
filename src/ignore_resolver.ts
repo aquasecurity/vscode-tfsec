@@ -1,3 +1,4 @@
+import { start } from 'repl';
 import * as vscode from 'vscode';
 import { CheckManager } from './check_manager';
 
@@ -12,7 +13,7 @@ const tfsecIgnoreDecoration = vscode.window.createTextEditorDecorationType({
 		textDecoration: 'none',
 	},
 	rangeBehavior: vscode.DecorationRangeBehavior.ClosedOpen,
-});	
+});
 
 function triggerDecoration() {
 	const config = vscode.workspace.getConfiguration('tfsec');
@@ -35,17 +36,19 @@ function updateTfsecIgnoreDecorators() {
 	const tfsecIgnores: vscode.DecorationOptions[] = [];
 
 	let match;
+	let r = regEx.exec(text);
 	while ((match = regEx.exec(text))) {
 		const startPos = activeEditor.document.positionAt(match.index);
-		const endPos = activeEditor.document.positionAt(match.index + match[0].length);
+		// const endPos = activeEditor.document.positionAt(match.index + match[0].length);
+		const endPos = new vscode.Position(startPos.line, activeEditor.document.lineAt(startPos.line).text.length + 1);
 		const message = getTfsecDescription(match[1]);
-		const decoration = { range: new vscode.Range(startPos, endPos), renderOptions: { after: {fontStyle: 'italic', contentText : message, color: new vscode.ThemeColor("editorGutter.commentRangeForeground") }}};
+		const decoration = { range: new vscode.Range(startPos, endPos), renderOptions: { after: { fontStyle: 'italic', contentText: message, color: new vscode.ThemeColor("editorGutter.commentRangeForeground") } } };
 		tfsecIgnores.push(decoration);
 	}
 	activeEditor.setDecorations(tfsecIgnoreDecoration, tfsecIgnores);
 }
 
-function getTfsecDescription(tfsecCode :string) {
+function getTfsecDescription(tfsecCode: string) {
 	var check = CheckManager.getInstance().get(tfsecCode);
 	if (check === undefined) {
 		return "[Uknown tfsec code]";
@@ -53,4 +56,4 @@ function getTfsecDescription(tfsecCode :string) {
 	return check.summary;
 }
 
-export {triggerDecoration};
+export { triggerDecoration };

@@ -4,8 +4,8 @@ import { TfSecCheck } from "../tfsec_check";
 import { TfsecTreeItem } from "./tfsec_treeitem";
 
 export class TfsecHelpProvider implements WebviewViewProvider {
-    private view : Webview | undefined;
-    
+    private view: Webview | undefined;
+
     resolveWebviewView(webviewView: WebviewView, context: WebviewViewResolveContext<unknown>, token: CancellationToken): void | Thenable<void> {
         this.view = webviewView.webview;
         this.update(null);
@@ -16,14 +16,14 @@ export class TfsecHelpProvider implements WebviewViewProvider {
             return;
         }
         if (item === null) {
-            return ;
+            return;
         }
         const codeData = CheckManager.getInstance().get(item.code);
         if (codeData === undefined) {
             this.view.html = `
 <h2>No check data available</h2>
 This check may no longer be valid. Check your tfsec is the latest version.
-`
+`;
             return;
         }
 
@@ -35,7 +35,7 @@ function getHtml(codeData: TfSecCheck | undefined): string {
     if (codeData === undefined) {
         return "";
     }
-    return`
+    return `
     <h2>${codeData?.code}</h2>
     ${codeData?.summary}
 
