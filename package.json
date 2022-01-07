@@ -3,7 +3,7 @@
   "displayName": "tfsec",
   "publisher": "tfsec",
   "description": "Tfsec integration for Visual Studio Code",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "engines": {
     "vscode": "^1.54.0"
   },
@@ -197,7 +197,6 @@
   },
   "dependencies": {
     "semver": "^7.3.5",
-    "tsc": "^1.20150623.0",
     "typescipt": "^1.0.0"
   }
 }

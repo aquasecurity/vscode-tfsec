@@ -2,6 +2,10 @@
 
 All notable changes to the "tfsec" extension will be documented in this file.
 
+### 1.2.1
+- Update the logo to the AquaSecurity one
+
+
 ### 1.2.0
 - Restructure explorer to be by severity
 - Fix the Help view for the checks
