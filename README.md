@@ -27,6 +27,9 @@ Ignore codes will be automatically resolved and the description of the error wil
 
 ## Release Notes
 
+### 1.3.1
+- Update the repository link
+
 ### 1.3.0
 - Remove dependency on codes resource for resolving legacy IDs
 

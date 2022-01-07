@@ -2,6 +2,9 @@
 
 All notable changes to the "tfsec" extension will be documented in this file.
 
+### 1.3.1
+- Update the repository link
+
 ### 1.3.0
 - Remove dependency on codes resource for resolving legacy IDs
 
