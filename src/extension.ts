@@ -1,25 +1,26 @@
 import * as vscode from 'vscode';
-import { triggerDecoration} from './ignore_resolver';
+import { addIgnore, triggerDecoration, IgnoreDetails } from './ignore';
 import { TfsecIssueProvider } from './explorer/issues_treeview';
 import { TfsecTreeItem } from './explorer/tfsec_treeitem';
 import { getOrCreateTfsecTerminal, getInstalledTfsecVersion } from './utils';
 import { TfsecHelpProvider } from './explorer/check_helpview';
 import * as semver from 'semver';
 
+
 // this method is called when vs code is activated
 export function activate(context: vscode.ExtensionContext) {
 	console.log('tfsec extension activated');
 	const helpProvider = new TfsecHelpProvider();
 	let activeEditor = vscode.window.activeTextEditor;
-	const issueProvider = new TfsecIssueProvider(context, helpProvider);
+	const issueProvider = new TfsecIssueProvider(context);
 	context.subscriptions.push(vscode.window.registerWebviewViewProvider("tfsec.helpview", helpProvider));
 
 	// creating the issue tree explicitly to allow access to events
 	let issueTree = vscode.window.createTreeView("tfsec.issueview", {
 		treeDataProvider: issueProvider,
 	});
-	
-	issueTree.onDidChangeSelection(function(event) {
+
+	issueTree.onDidChangeSelection(function (event) {
 		const treeItem = event.selection[0];
 		if (treeItem) {
 			helpProvider.update(treeItem);
@@ -31,20 +32,38 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand('tfsec.version', () => showCurrentTfsecVersion()));
 
 	context.subscriptions.push(vscode.commands.registerCommand('tfsec.ignore', (element: TfsecTreeItem) => {
-		vscode.workspace.openTextDocument(vscode.Uri.file(element.filename)).then((file: vscode.TextDocument) => {
-			vscode.window.showTextDocument(file, 1, false).then(e => {
-				e.edit(edit => {
-					if (element.startLineNumber === element.endLineNumber) {
-						let errorLine = vscode.window.activeTextEditor?.document.lineAt(element.startLineNumber);
-						if (errorLine !== null && errorLine !== undefined) {
-						edit.insert(new vscode.Position(errorLine.lineNumber-1, errorLine.firstNonWhitespaceCharacterIndex), `#tfsec:ignore:${element.code}\n`);
-						}
-					} else {
-						edit.insert(new vscode.Position(element.startLineNumber - 1, 0), `#tfsec:ignore:${element.code}\n`);
-					}
-				});
-			});
+		const details = [new IgnoreDetails(element.code, element.startLineNumber, element.endLineNumber)];
+		addIgnore(element.filename, details);
+		const config = vscode.workspace.getConfiguration('tfsec');
+		var reRunOnIgnore = config.get('runOnIgnore', true);
+		if (reRunOnIgnore) {
+			vscode.commands.executeCommand("tfsec.run");
+		};
+	}));
+
+
+	context.subscriptions.push(vscode.commands.registerCommand('tfsec.ignoreAll', (element: TfsecTreeItem) => {
+		let ignoreMap = new Map<string, IgnoreDetails[]>();
+
+		for (let index = 0; index < issueProvider.resultData.length; index++) {
+			const r = issueProvider.resultData[index];
+			if (r === undefined) {
+				continue;
+			}
+			if (r.code !== element.code) { continue; }
+
+			let ignores = ignoreMap.get(r.filename);
+			if (!ignores) {
+				ignores = [];
+			}
+			ignores.push(new IgnoreDetails(r.code, r.startLine, r.endLine));
+			ignoreMap.set(r.filename, ignores);
+		}
+
+		ignoreMap.forEach((ignores: IgnoreDetails[], filename: string) => {
+			addIgnore(filename, ignores);
 		});
+		Promise.resolve();
 		const config = vscode.workspace.getConfiguration('tfsec');
 		var reRunOnIgnore = config.get('runOnIgnore', true);
 		if (reRunOnIgnore) {
@@ -54,6 +73,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(vscode.commands.registerCommand("tfsec.run", () => {
 		let terminal = getOrCreateTfsecTerminal();
+		if (terminal === undefined) { vscode.window.showErrorMessage("Could not create terminal session"); return; }
 		terminal.show();
 		if (vscode.workspace && vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
 			terminal.sendText(buildCommand(issueProvider.resultsStoragePath));
@@ -69,6 +89,7 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 
 		let terminal = getOrCreateTfsecTerminal();
+		if (terminal === undefined) { vscode.window.showErrorMessage("Could not create terminal session"); return; }
 		terminal.hide();
 		terminal.sendText("tfsec --update");
 	}));
@@ -96,9 +117,11 @@ export function activate(context: vscode.ExtensionContext) {
 function showCurrentTfsecVersion() {
 	const currentVersion = getInstalledTfsecVersion();
 	if (currentVersion) {
-		vscode.window.showInformationMessage(`Current tfsec version is ${currentVersion}`);	
+		vscode.window.showInformationMessage(`Current tfsec version is ${currentVersion}`);
 	}
 }
+
+
 
 function buildCommand(resultsStoragePath: string) {
 	const config = vscode.workspace.getConfiguration('tfsec');

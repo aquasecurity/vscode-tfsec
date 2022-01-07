@@ -2,6 +2,11 @@
 
 All notable changes to the "tfsec" extension will be documented in this file.
 
+### 1.2.0
+- Restructure explorer to be by severity
+- Fix the Help view for the checks
+- Add "Ignore all" to ignore all instances of an issue
+
 ### 1.1.11
 - Add menu button to update tfsec from within vscode (post tfsec v0.39.39)
 - Add command to show the current version of tfsec running
