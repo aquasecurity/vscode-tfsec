@@ -1,0 +1,43 @@
+name: vsix-release
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  build:
+    name: releasing vsix for extension
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout latest
+        uses: actions/checkout@v2
+
+      - name: Run npm install
+        run: npm install
+
+      - name: run the package action
+        uses: lannonbr/vsce-action@3.0.0
+        with:
+          args: "package -o tfsec.vsix"
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: ${{ github.ref }}
+          draft: false
+          prerelease: false
+
+      - name: Attach artifact to release
+        uses: actions/upload-release-asset@v1
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: tfsec.vsix
+          asset_name: tfsec.vsix
+          asset_content_type: application/vsix
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
