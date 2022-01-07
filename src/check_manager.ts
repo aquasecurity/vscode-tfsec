@@ -1,35 +1,152 @@
-import * as path from 'path';
-import * as fs from 'fs';
-import {TfSecCheck} from './tfsec_check';
-
 export class CheckManager {
     private static instance: CheckManager;
-    private loadedCodes: { [key: string]: TfSecCheck} ={};
-    
-    private constructor() {};
+    private loadedCodes = new Map<string, string>([
+        ["AWS001", "S3 Bucket has an ACL defined which allows public access."],
+        ["AWS002", "S3 Bucket does not have logging enabled."],
+        ["AWS003", "AWS Classic resource usage."],
+        ["AWS004", "Use of plain HTTP."],
+        ["AWS005", "Load balancer is exposed to the internet."],
+        ["AWS006", "An ingress security group rule allows traffic from /0."],
+        ["AWS007", "An egress security group rule allows traffic to /0."],
+        ["AWS008", "An inline ingress security group rule allows traffic from /0."],
+        ["AWS009", "An inline egress security group rule allows traffic to /0."],
+        ["AWS010", "An outdated SSL policy is in use by a load balancer."],
+        ["AWS011", "A database resource is marked as publicly accessible."],
+        ["AWS012", "A resource has a public IP address."],
+        ["AWS013", "Task definition defines sensitive environment variable(s)."],
+        ["AWS014", "Launch configuration with unencrypted block device."],
+        ["AWS015", "Unencrypted SQS queue."],
+        ["AWS016", "Unencrypted SNS topic."],
+        ["AWS017", "Unencrypted S3 bucket."],
+        ["AWS018", "Missing description for security group/security group rule."],
+        ["AWS019", "A KMS key is not configured to auto-rotate."],
+        ["AWS020", "CloudFront distribution allows unencrypted (HTTP) communications."],
+        ["AWS021", "CloudFront distribution uses outdated SSL/TLS protocols."],
+        ["AWS022", "A MSK cluster allows unencrypted data in transit."],
+        ["AWS023", "ECR repository has image scans disabled."],
+        ["AWS024", "Kinesis stream is unencrypted."],
+        ["AWS025", "API Gateway domain name uses outdated SSL/TLS protocols."],
+        ["AWS031", "Elasticsearch domain isn't encrypted at rest."],
+        ["AWS032", "Elasticsearch domain uses plaintext traffic for node to node communication."],
+        ["AWS033", "Elasticsearch doesn't enforce HTTPS traffic."],
+        ["AWS034", "Elasticsearch domain endpoint is using outdated TLS policy."],
+        ["AWS035", "Unencrypted Elasticache Replication Group."],
+        ["AWS036", "Elasticache Replication Group uses unencrypted traffic."],
+        ["AWS037", "IAM Password policy should prevent password reuse."],
+        ["AWS038", "IAM Password policy should have expiry less than or equal to 90 days."],
+        ["AWS039", "IAM Password policy should have minimum password length of 14 or more characters."],
+        ["AWS040", "IAM Password policy should have requirement for at least one symbol in the password."],
+        ["AWS041", "IAM Password policy should have requirement for at least one number in the password."],
+        ["AWS042", "IAM Password policy should have requirement for at least one lowercase character."],
+        ["AWS043", "IAM Password policy should have requirement for at least one uppercase character."],
+        ["AWS044", "AWS provider has access credentials specified."],
+        ["AWS045", "CloudFront distribution does not have a WAF in front."],
+        ["AWS046", "AWS IAM policy document has wildcard action statement."],
+        ["AWS047", "AWS SQS policy document has wildcard action statement."],
+        ["AWS048", "EFS Encryption has not been enabled"],
+        ["AWS049", "An ingress Network ACL rule allows specific ports from /0."],
+        ["AWS050", "An ingress Network ACL rule allows ALL ports from /0."],
+        ["AWS051", "There is no encryption specified or encryption is disabled on the RDS Cluster."],
+        ["AWS052", "RDS encryption has not been enabled at a DB Instance level."],
+        ["AWS053", "Encryption for RDS Perfomance Insights should be enabled."],
+        ["AWS057", "Domain logging should be enabled for Elastic Search domains"],
+        ["AWS058", "Ensure that lambda function permission has a source arn specified"],
+        ["AWS059", "Athena databases and workgroup configurations are created unencrypted at rest by default, they should be encrypted"],
+        ["AWS060", "Athena workgroups should enforce configuration to prevent client disabling encryption"],
+        ["AWS061", "API Gateway stages for V1 and V2 should have access logging enabled"],
+        ["AWS062", "User data for EC2 instances must not contain sensitive AWS keys"],
+        ["AWS063", "Cloudtrail should be enabled in all regions regardless of where your AWS resources are generally homed"],
+        ["AWS064", "Cloudtrail log validation should be enabled to prevent tampering of log data"],
+        ["AWS065", "Cloudtrail should be encrypted at rest to secure access to sensitive trail data"],
+        ["AWS066", "EKS should have the encryption of secrets enabled"],
+        ["AWS067", "EKS Clusters should have cluster control plane logging turned on"],
+        ["AWS068", "EKS cluster should not have open CIDR range for public access"],
+        ["AWS069", "EKS Clusters should have the public access disabled"],
+        ["AWS070", "AWS ES Domain should have logging enabled"],
+        ["AWS071", "Cloudfront distribution should have Access Logging configured"],
+        ["AWS072", "Viewer Protocol Policy in Cloudfront Distribution Cache should always be set to HTTPS"],
+        ["AWS073", "S3 Access Block should Ignore Public Acl"],
+        ["AWS074", "S3 Access block should block public ACL"],
+        ["AWS075", "S3 Access block should restrict public bucket to limit access"],
+        ["AWS076", "S3 Access block should block public policy"],
+        ["AWS077", "S3 Data should be versioned"],
+        ["AWS078", "ECR images tags shouldn't be mutable."],
+        ["AWS079", "aws_instance should activate session tokens for Instance Metadata Service."],
+        ["AWS080", "CodeBuild Project artifacts encryption should not be disabled"],
+        ["AWS081", "DAX Cluster should always encrypt data at rest"],
+        ["AWS082", "It is AWS best practice to not use the default VPC for workflows"],
+        ["AWS083", "Load balancers should drop invalid headers"],
+        ["AWS084", "Root and user volumes on Workspaces should be encrypted"],
+        ["AWS085", "Config configuration aggregator should be using all regions for source"],
+        ["AWS086", "Point in time recovery should be enabled to protect DynamoDB table"],
+        ["AWS087", "Redshift cluster should be deployed into a specific VPC"],
+        ["AWS088", "Redis cluster should be backup retention turned on"],
+        ["AWS089", "CloudWatch log groups should be encrypted"],
+        ["AWS090", "ECS clusters should have container insights enabled"],
+        ["AWS091", "RDS Cluster and RDS instance should have backup retention longer than default 1 day"],
+        ["AWS092", "DynamoDB tables should use at rest encyption with a Customer Managed Key"],
+        ["AWS093", "ECR Repository should use customer managed keys to allow more control"],
+        ["AWS094", "Redshift clusters should use at rest encryption"],
+        ["AWS095", "Secrets Manager should use customer managed keys"],
+        ["AWS096", "ECS Task Definitions with EFS volumes should use in-transit encryption"],
+        ["AWS097", "Document DB should be encrypted using customer managed keys"],
+        ["AWS098", "Where supported use EBS optimization"],
+        ["AZU001", "An inbound network security rule allows traffic from /0."],
+        ["AZU002", "An outbound network security rule allows traffic to /0."],
+        ["AZU003", "Unencrypted managed disk."],
+        ["AZU004", "Unencrypted data lake storage."],
+        ["AZU005", "Password authentication in use instead of SSH keys."],
+        ["AZU006", "Ensure AKS cluster has Network Policy configured"],
+        ["AZU007", "Ensure RBAC is enabled on AKS clusters"],
+        ["AZU008", "Ensure AKS has an API Server Authorized IP Ranges enabled"],
+        ["AZU009", "Ensure AKS logging to Azure Monitoring is Configured"],
+        ["AZU010", "Ensure HTTPS is enabled on Azure Storage Account"],
+        ["AZU011", "Storage containers in blob storage mode should not have public access"],
+        ["AZU012", "The default action on Storage account network rules should be set to deny"],
+        ["AZU013", "Trusted Microsoft Services should have bypass access to Storage accounts"],
+        ["AZU014", "Storage accounts should be configured to only accept transfers that are over secure connections"],
+        ["AZU015", "The minimum TLS version for Storage Accounts should be TLS1_2"],
+        ["AZU016", "When using Queue Services for a storage account, logging should be enabled."],
+        ["AZU017", "SSH access should not be accessible from the Internet, should be blocked on port 22"],
+        ["AZU018", "Auditing should be enabled on Azure SQL Databases"],
+        ["AZU019", "Database auditing rentention period should be longer than 90 days"],
+        ["AZU020", "Key vault should have the network acl block specified"],
+        ["AZU021", "Key vault should have purge protection enabled"],
+        ["AZU022", "Key vault Secret should have a content type set"],
+        ["AZU023", "Key Vault Secret should have an expiration date set"],
+        ["AZU024", "RDP access should not be accessible from the Internet, should be blocked on port 3389"],
+        ["AZU025", "Data Factory should have public access disabled, the default is enabled."],
+        ["AZU026", "Ensure that the expiration date is set on all keys"],
+        ["AZU027", "Synapse Workspace should have managed virtual network enabled, the default is disabled."],
+        ["AZU028", "Ensure the Function App can only be accessed via HTTPS. The default is false."],
+        ["GCP001", "Unencrypted compute disk."],
+        ["GCP003", "An inbound firewall rule allows traffic from /0."],
+        ["GCP004", "An outbound firewall rule allows traffic to /0."],
+        ["GCP005", "Legacy ABAC permissions are enabled."],
+        ["GCP006", "Node metadata value disables metadata concealment."],
+        ["GCP007", "Legacy metadata endpoints enabled."],
+        ["GCP008", "Legacy client authentication methods utilized."],
+        ["GCP009", "Pod security policy enforcement not defined."],
+        ["GCP010", "Shielded GKE nodes not enabled."],
+        ["GCP011", "IAM granted directly to user."],
+        ["GCP012", "Checks for service account defined for GKE nodes"],
+        ["GEN001", "Potentially sensitive data stored in \"default \" value of variable."],
+        ["GEN002", "Potentially sensitive data stored in local value."],
+        ["GEN003", "Potentially sensitive data stored in block attribute."],
+        ["GEN004", "Github repository shouldn't be public."]
+    ]);
+
+    private constructor() { };
 
     static getInstance(): CheckManager {
         if (!CheckManager.instance) {
             CheckManager.instance = new CheckManager();
-            CheckManager.instance.load();
         }
-    
+
         return CheckManager.instance;
-      };
-      
-    load() {
-        const codesFile = path.join(__filename, '..', '..', 'resources', 'codes.json');
-        if (fs.existsSync(codesFile)) {
-            let content = fs.readFileSync(codesFile, 'utf8');
-            const checks = JSON.parse(content);
-            for (let index = 0; index < checks.checks.length; index++) {
-                const check = checks.checks[index];
-                this.loadedCodes[check.code]  = new TfSecCheck(check);
-            }
-        }
     };
-    
-    get(code: string): TfSecCheck | undefined {
-        return this.loadedCodes[code];
+
+    get(code: string): string | undefined {
+        return this.loadedCodes.get(code);
     };
 };

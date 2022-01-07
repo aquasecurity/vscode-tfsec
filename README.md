@@ -27,6 +27,12 @@ Ignore codes will be automatically resolved and the description of the error wil
 
 ## Release Notes
 
+### 1.3.0
+- Remove dependency on codes resource for resolving legacy IDs
+
+### 1.2.2
+- Add support for AVD ID
+
 ### 1.2.1
 - Update the logo to the AquaSecurity one
 
