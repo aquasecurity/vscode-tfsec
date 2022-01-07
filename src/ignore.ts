@@ -62,7 +62,7 @@ function getTfsecDescription(tfsecCode: string) {
     if (check === undefined) {
         return "[Uknown tfsec code]";
     }
-    return check.summary;
+    return check;
 }
 
 

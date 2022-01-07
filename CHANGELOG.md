@@ -2,9 +2,14 @@
 
 All notable changes to the "tfsec" extension will be documented in this file.
 
+### 1.3.0
+- Remove dependency on codes resource for resolving legacy IDs
+
+### 1.2.2
+- Add support for AVD ID
+
 ### 1.2.1
 - Update the logo to the AquaSecurity one
-
 
 ### 1.2.0
 - Restructure explorer to be by severity

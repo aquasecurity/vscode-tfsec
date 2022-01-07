@@ -16,7 +16,7 @@ export class CheckResult {
 	constructor(
 		result: any
 	) {
-		this.code = result.rule_id;
+		this.code = result.long_id ?? result.rule_id;
 		this.provider = result.rule_provider;
 		this.codeDescription = result.rule_description;
 		this.summary = result.description;
