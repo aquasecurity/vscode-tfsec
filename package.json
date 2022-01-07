@@ -3,7 +3,7 @@
   "displayName": "tfsec",
   "publisher": "tfsec",
   "description": "Tfsec integration for Visual Studio Code",
-  "version": "1.1.11",
+  "version": "1.2.1",
   "engines": {
     "vscode": "^1.54.0"
   },
@@ -89,7 +89,11 @@
       },
       {
         "command": "tfsec.ignore",
-        "title": "Ignore this issue"
+        "title": "Ignore this issue instance"
+      },
+      {
+        "command": "tfsec.ignoreAll",
+        "title": "Ignore all instances"
       },
       {
         "command": "tfsec.version",
@@ -160,6 +164,10 @@
         {
           "command": "tfsec.ignore",
           "when": "view == tfsec.issueview && viewItem == TFSEC_FILE_LOCATION"
+        },
+        {
+          "command": "tfsec.ignoreAll",
+          "when": "view == tfsec.issueview && viewItem == TFSEC_CODE"
         }
       ]
     }
@@ -189,7 +197,6 @@
   },
   "dependencies": {
     "semver": "^7.3.5",
-    "tsc": "^1.20150623.0",
     "typescipt": "^1.0.0"
   }
 }

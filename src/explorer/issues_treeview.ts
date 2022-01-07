@@ -1,22 +1,21 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import { sortByCode, uniqueLocations } from '../utils';
-import { CheckResult } from './check_result';
-import { TfsecTreeItem } from './tfsec_treeitem';
-import { TfsecHelpProvider } from './check_helpview';
+import { sortByCode, sortBySeverity, uniqueLocations } from '../utils';
+import { CheckResult, CheckSeverity } from './check_result';
+import { TfsecTreeItem, TfsecTreeItemType } from './tfsec_treeitem';
 
 export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem> {
 
 	private _onDidChangeTreeData: vscode.EventEmitter<TfsecTreeItem | undefined | void> = new vscode.EventEmitter<TfsecTreeItem | undefined | void>();
 	readonly onDidChangeTreeData: vscode.Event<TfsecTreeItem | undefined | void> = this._onDidChangeTreeData.event;
-	private resultData: CheckResult[] = [];
+	public resultData: CheckResult[] = [];
 	private taintResults: boolean = true;
 	private rootpath: string = "";
 	private storagePath: string = "";
 	public readonly resultsStoragePath: string = "";
 
-	constructor(context: vscode.ExtensionContext, private tfsecHelpProvider: TfsecHelpProvider) {
+	constructor(context: vscode.ExtensionContext) {
 		if (context.storageUri) {
 			this.storagePath = context.storageUri.fsPath;
 			console.log(`storage path is ${this.storagePath}`);
@@ -28,7 +27,7 @@ export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem
 				fs.closeSync(fs.openSync(this.resultsStoragePath, 'w'));
 			}
 			// create the file watcher to refresh the tree when changes are made
-			fs.watch(this.resultsStoragePath, (eventType, filename) => {
+			fs.watch(this.resultsStoragePath, (eventType) => {
 				if (eventType !== "change") {
 					return;
 				}
@@ -46,7 +45,7 @@ export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem
 
 	// when there is a tfsec output file, load the results
 	loadResultData() {
-		if (this.resultsStoragePath !== "" && vscode.workspace && vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
+		if (this.resultsStoragePath !== "" && vscode.workspace && vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders[0]) {
 			this.rootpath = vscode.workspace.workspaceFolders[0].uri.fsPath;
 			if (fs.existsSync(this.resultsStoragePath)) {
 				let content = fs.readFileSync(this.resultsStoragePath, 'utf8');
@@ -79,14 +78,41 @@ export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem
 		// if this is refresh then get the top level codes
 		let items: TfsecTreeItem[] = [];
 		if (!element) {
-			items = this.getCurrentTfsecIssues();
-		} else if (element.collapsibleState !== vscode.TreeItemCollapsibleState.None) {
+			items = this.getCurrentTfsecSeverities();
+		} else if (element.treeItemType === TfsecTreeItemType.issueSeverity) {
+			items = this.getCurrentTfsecIssues(element.severity);
+		} else {
 			items = this.getIssuesLocationsByCode(element.code);
 		}
 		return Promise.resolve(items);
 	}
 
-	private getCurrentTfsecIssues(): TfsecTreeItem[] {
+	private getCurrentTfsecSeverities(): TfsecTreeItem[] {
+		var results: TfsecTreeItem[] = [];
+		var resolvedSeverities: string[] = [];
+
+
+		if (this.taintResults) {
+			this.loadResultData();
+		}
+
+		for (let index = 0; index < this.resultData.length; index++) {
+			const result = this.resultData[index];
+			if (result === undefined) {
+				continue;
+			}
+
+			if (resolvedSeverities.includes(result.severity)) {
+				continue;
+			}
+			resolvedSeverities.push(result.severity);
+			results.push(new TfsecTreeItem(result.severity, new CheckSeverity(result), vscode.TreeItemCollapsibleState.Collapsed));
+		}
+		return results.sort(sortBySeverity);
+	}
+
+
+	private getCurrentTfsecIssues(severity: string): TfsecTreeItem[] {
 		var results: TfsecTreeItem[] = [];
 		var resolvedCodes: string[] = [];
 
@@ -98,7 +124,10 @@ export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem
 		for (let index = 0; index < this.resultData.length; index++) {
 			const result = this.resultData[index];
 
-			if (resolvedCodes.includes(result.code)) {
+			if (result === undefined) {
+				continue;
+			}
+			if (resolvedCodes.includes(result.code) || result.severity !== severity) {
 				continue;
 			}
 			resolvedCodes.push(result.code);
@@ -113,6 +142,10 @@ export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem
 		const filtered = this.resultData.filter(c => c.code === code);
 		for (let index = 0; index < filtered.length; index++) {
 			const result = filtered[index];
+
+			if (result === undefined) {
+				continue;
+			}
 			if (result.code !== code) {
 				continue;
 			}
