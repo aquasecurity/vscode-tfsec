@@ -75,20 +75,6 @@ const uniqueLocations = (input: TfsecTreeItem[]): TfsecTreeItem[] => {
     return output;
 };
 
-const getOrCreateTfsecTerminal = () => {
-    if (vscode.window.terminals.length > 0) {
-        for (let i = 0; i < vscode.window.terminals.length; i++) {
-            const t = vscode.window.terminals[i];
-            if (t === undefined) {
-                continue;
-            }
-            if (t.name === "tfsec") {
-                return t;
-            }
-        }
-    }
-    return vscode.window.createTerminal("tfsec");
-};
 
 const getInstalledTfsecVersion = () => {
     const config = vscode.workspace.getConfiguration('tfsec');
@@ -106,4 +92,4 @@ const getInstalledTfsecVersion = () => {
 
 const capitalize = (s: string) => (s && s[0] && s[0].toUpperCase() + s.slice(1).toLowerCase()) || "";
 
-export { sortByCode, sortBySeverity, uniqueLocations, getOrCreateTfsecTerminal, getInstalledTfsecVersion, capitalize };
+export { sortByCode, sortBySeverity, uniqueLocations, getInstalledTfsecVersion, capitalize };

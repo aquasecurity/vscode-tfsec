@@ -2,9 +2,10 @@ import * as vscode from 'vscode';
 import { addIgnore, triggerDecoration, IgnoreDetails } from './ignore';
 import { TfsecIssueProvider } from './explorer/issues_treeview';
 import { TfsecTreeItem } from './explorer/tfsec_treeitem';
-import { getOrCreateTfsecTerminal, getInstalledTfsecVersion } from './utils';
+import { getInstalledTfsecVersion } from './utils';
 import { TfsecHelpProvider } from './explorer/check_helpview';
 import * as semver from 'semver';
+import * as child from 'child_process';
 
 
 // this method is called when vs code is activated
@@ -13,6 +14,7 @@ export function activate(context: vscode.ExtensionContext) {
 	const helpProvider = new TfsecHelpProvider();
 	let activeEditor = vscode.window.activeTextEditor;
 	const issueProvider = new TfsecIssueProvider(context);
+	var outputChannel = vscode.window.createOutputChannel("tfsec");
 	context.subscriptions.push(vscode.window.registerWebviewViewProvider("tfsec.helpview", helpProvider));
 
 	// creating the issue tree explicitly to allow access to events
@@ -72,11 +74,20 @@ export function activate(context: vscode.ExtensionContext) {
 	}));
 
 	context.subscriptions.push(vscode.commands.registerCommand("tfsec.run", () => {
-		let terminal = getOrCreateTfsecTerminal();
-		if (terminal === undefined) { vscode.window.showErrorMessage("Could not create terminal session"); return; }
-		terminal.show();
-		if (vscode.workspace && vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
-			terminal.sendText(buildCommand(issueProvider.resultsStoragePath));
+
+		if (vscode.workspace && vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0
+			&& vscode.workspace.workspaceFolders[0] !== undefined) {
+
+			let command = buildCommand(issueProvider.resultsStoragePath, vscode.workspace.workspaceFolders[0].uri.fsPath);
+			try {
+				let result: Buffer = child.execSync(command);
+				outputChannel.show();
+				outputChannel.append(result.toString());
+			} catch (err) {
+
+			} finally {
+				setTimeout(() => { vscode.commands.executeCommand("tfsec.refresh"); }, 250);
+			}
 		}
 	}));
 
@@ -87,11 +98,19 @@ export function activate(context: vscode.ExtensionContext) {
 		if (semver.lt(currentVersion, "0.39.39")) {
 			vscode.window.showInformationMessage(`Self updating was not introduced till v0.39.39 and you are running ${currentVersion}. Pleae update manually to at least v0.39.39`);
 		}
+		try {
+			const config = vscode.workspace.getConfiguration('tfsec');
+			var binary = config.get('binaryPath', 'tfsec');
+			if (binary === "") {
+				binary = "tfsec";
+			}
+			let result: Buffer = child.execSync(binary + " --update");
+			outputChannel.show();
+			outputChannel.append(result.toLocaleString());
+		} catch (err) {
 
-		let terminal = getOrCreateTfsecTerminal();
-		if (terminal === undefined) { vscode.window.showErrorMessage("Could not create terminal session"); return; }
-		terminal.hide();
-		terminal.sendText("tfsec --update");
+		}
+
 	}));
 
 	context.subscriptions.push(vscode.window.onDidChangeActiveTextEditor(editor => {
@@ -123,7 +142,7 @@ function showCurrentTfsecVersion() {
 
 
 
-function buildCommand(resultsStoragePath: string) {
+function buildCommand(resultsStoragePath: string, scanPath: string) {
 	const config = vscode.workspace.getConfiguration('tfsec');
 	var binary = config.get('binaryPath', 'tfsec');
 	if (binary === "") {
@@ -141,6 +160,7 @@ function buildCommand(resultsStoragePath: string) {
 
 	command.push('--format json');
 	command.push(`--out "${resultsStoragePath}"`);
+	command.push(scanPath);
 
 	return command.join(" ");
 }
