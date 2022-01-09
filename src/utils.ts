@@ -1,6 +1,6 @@
 
 import * as vscode from 'vscode';
-import * as cp from 'child_process';
+import * as child from 'child_process';
 import { TfsecTreeItem } from './explorer/tfsec_treeitem';
 
 
@@ -86,7 +86,7 @@ const getInstalledTfsecVersion = () => {
     var command = [];
     command.push(binary);
     command.push('--version');
-    const getVersion = cp.execSync(command.join(" "), { "shell": "/usr/bin/bash" });
+    const getVersion = child.execSync(command.join(" "), { "shell": "/usr/bin/bash" });
     return getVersion.toString();
 };
 

@@ -6,6 +6,7 @@ import { getInstalledTfsecVersion } from './utils';
 import { TfsecHelpProvider } from './explorer/check_helpview';
 import * as semver from 'semver';
 import * as child from 'child_process';
+import { TfSecCheck } from './tfsec_check';
 
 
 // this method is called when vs code is activated
@@ -33,63 +34,11 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(vscode.commands.registerCommand('tfsec.version', () => showCurrentTfsecVersion()));
 
-	context.subscriptions.push(vscode.commands.registerCommand('tfsec.ignore', (element: TfsecTreeItem) => {
-		const details = [new IgnoreDetails(element.code, element.startLineNumber, element.endLineNumber)];
-		addIgnore(element.filename, details);
-		const config = vscode.workspace.getConfiguration('tfsec');
-		var reRunOnIgnore = config.get('runOnIgnore', true);
-		if (reRunOnIgnore) {
-			vscode.commands.executeCommand("tfsec.run");
-		};
-	}));
+	context.subscriptions.push(vscode.commands.registerCommand('tfsec.ignore', (element: TfsecTreeItem) => ignoreInstance(element)));
 
+	context.subscriptions.push(vscode.commands.registerCommand('tfsec.ignoreAll', (element: TfsecTreeItem) => ignoreAllInstances(element, issueProvider)));
 
-	context.subscriptions.push(vscode.commands.registerCommand('tfsec.ignoreAll', (element: TfsecTreeItem) => {
-		let ignoreMap = new Map<string, IgnoreDetails[]>();
-
-		for (let index = 0; index < issueProvider.resultData.length; index++) {
-			const r = issueProvider.resultData[index];
-			if (r === undefined) {
-				continue;
-			}
-			if (r.code !== element.code) { continue; }
-
-			let ignores = ignoreMap.get(r.filename);
-			if (!ignores) {
-				ignores = [];
-			}
-			ignores.push(new IgnoreDetails(r.code, r.startLine, r.endLine));
-			ignoreMap.set(r.filename, ignores);
-		}
-
-		ignoreMap.forEach((ignores: IgnoreDetails[], filename: string) => {
-			addIgnore(filename, ignores);
-		});
-		Promise.resolve();
-		const config = vscode.workspace.getConfiguration('tfsec');
-		var reRunOnIgnore = config.get('runOnIgnore', true);
-		if (reRunOnIgnore) {
-			vscode.commands.executeCommand("tfsec.run");
-		};
-	}));
-
-	context.subscriptions.push(vscode.commands.registerCommand("tfsec.run", () => {
-
-		if (vscode.workspace && vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0
-			&& vscode.workspace.workspaceFolders[0] !== undefined) {
-
-			let command = buildCommand(issueProvider.resultsStoragePath, vscode.workspace.workspaceFolders[0].uri.fsPath);
-			try {
-				let result: Buffer = child.execSync(command);
-				outputChannel.show();
-				outputChannel.append(result.toString());
-			} catch (err) {
-
-			} finally {
-				setTimeout(() => { vscode.commands.executeCommand("tfsec.refresh"); }, 250);
-			}
-		}
-	}));
+	context.subscriptions.push(vscode.commands.registerCommand("tfsec.run", () => runTfsec()));
 
 
 	context.subscriptions.push(vscode.commands.registerCommand("tfsec.updatebinary", () => {
@@ -99,11 +48,7 @@ export function activate(context: vscode.ExtensionContext) {
 			vscode.window.showInformationMessage(`Self updating was not introduced till v0.39.39 and you are running ${currentVersion}. Pleae update manually to at least v0.39.39`);
 		}
 		try {
-			const config = vscode.workspace.getConfiguration('tfsec');
-			var binary = config.get('binaryPath', 'tfsec');
-			if (binary === "") {
-				binary = "tfsec";
-			}
+			var binary = getBinaryPath();
 			let result: Buffer = child.execSync(binary + " --update");
 			outputChannel.show();
 			outputChannel.append(result.toLocaleString());
@@ -133,6 +78,54 @@ export function activate(context: vscode.ExtensionContext) {
 	showCurrentTfsecVersion();
 }
 
+function ignoreInstance(element: TfsecTreeItem) {
+	const details = [new IgnoreDetails(element.code, element.startLineNumber, element.endLineNumber)];
+	addIgnore(element.filename, details);
+	const config = vscode.workspace.getConfiguration('tfsec');
+	var reRunOnIgnore = config.get('runOnIgnore', true);
+	if (reRunOnIgnore) {
+		vscode.commands.executeCommand("tfsec.run");
+	};
+}
+
+function ignoreAllInstances(element: TfsecTreeItem, issueProvider: TfsecIssueProvider) {
+	let ignoreMap = new Map<string, IgnoreDetails[]>();
+
+	for (let index = 0; index < issueProvider.resultData.length; index++) {
+		const r = issueProvider.resultData[index];
+		if (r === undefined) {
+			continue;
+		}
+		if (r.code !== element.code) { continue; }
+
+		let ignores = ignoreMap.get(r.filename);
+		if (!ignores) {
+			ignores = [];
+		}
+		ignores.push(new IgnoreDetails(r.code, r.startLine, r.endLine));
+		ignoreMap.set(r.filename, ignores);
+	}
+
+	ignoreMap.forEach((ignores: IgnoreDetails[], filename: string) => {
+		addIgnore(filename, ignores);
+	});
+	Promise.resolve();
+	const config = vscode.workspace.getConfiguration('tfsec');
+	var reRunOnIgnore = config.get('runOnIgnore', true);
+	if (reRunOnIgnore) {
+		vscode.commands.executeCommand("tfsec.run");
+	};
+}
+
+function getBinaryPath() {
+	const config = vscode.workspace.getConfiguration('tfsec');
+	var binary = config.get('binaryPath', 'tfsec');
+	if (binary === "") {
+		binary = "tfsec";
+	}
+	return binary;
+}
+
 function showCurrentTfsecVersion() {
 	const currentVersion = getInstalledTfsecVersion();
 	if (currentVersion) {
@@ -140,14 +133,9 @@ function showCurrentTfsecVersion() {
 	}
 }
 
-
-
 function buildCommand(resultsStoragePath: string, scanPath: string) {
 	const config = vscode.workspace.getConfiguration('tfsec');
-	var binary = config.get('binaryPath', 'tfsec');
-	if (binary === "") {
-		binary = "tfsec";
-	}
+	const binary = getBinaryPath();
 
 	var command = [];
 	command.push(binary);
@@ -163,4 +151,22 @@ function buildCommand(resultsStoragePath: string, scanPath: string) {
 	command.push(scanPath);
 
 	return command.join(" ");
+}
+
+function runTfsec(issueProvider: TfsecIssueProvider, outputChannel: vscode.OutputChannel) {
+
+	if (vscode.workspace && vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0
+		&& vscode.workspace.workspaceFolders[0] !== undefined) {
+
+		let command = buildCommand(issueProvider.resultsStoragePath, vscode.workspace.workspaceFolders[0].uri.fsPath);
+		try {
+			let result: Buffer = child.execSync(command);
+			outputChannel.show();
+			outputChannel.append(result.toString());
+		} catch (err) {
+
+		} finally {
+			setTimeout(() => { vscode.commands.executeCommand("tfsec.refresh"); }, 250);
+		}
+	}
 }
