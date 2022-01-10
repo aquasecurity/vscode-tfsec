@@ -1,10 +1,11 @@
 import * as vscode from 'vscode';
 import { addIgnore, triggerDecoration, IgnoreDetails } from './ignore';
 import { TfsecIssueProvider } from './explorer/issues_treeview';
-import { TfsecTreeItem } from './explorer/tfsec_treeitem';
-import { getOrCreateTfsecTerminal, getInstalledTfsecVersion } from './utils';
+import { TfsecTreeItem, TfsecTreeItemType } from './explorer/tfsec_treeitem';
+import { getInstalledTfsecVersion, getBinaryPath } from './utils';
 import { TfsecHelpProvider } from './explorer/check_helpview';
 import * as semver from 'semver';
+import * as child from 'child_process';
 
 
 // this method is called when vs code is activated
@@ -13,6 +14,7 @@ export function activate(context: vscode.ExtensionContext) {
 	const helpProvider = new TfsecHelpProvider();
 	let activeEditor = vscode.window.activeTextEditor;
 	const issueProvider = new TfsecIssueProvider(context);
+	var outputChannel = vscode.window.createOutputChannel("tfsec");
 	context.subscriptions.push(vscode.window.registerWebviewViewProvider("tfsec.helpview", helpProvider));
 
 	// creating the issue tree explicitly to allow access to events
@@ -28,71 +30,12 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	context.subscriptions.push(vscode.commands.registerCommand('tfsec.refresh', () => issueProvider.refresh()));
-
 	context.subscriptions.push(vscode.commands.registerCommand('tfsec.version', () => showCurrentTfsecVersion()));
-
-	context.subscriptions.push(vscode.commands.registerCommand('tfsec.ignore', (element: TfsecTreeItem) => {
-		const details = [new IgnoreDetails(element.code, element.startLineNumber, element.endLineNumber)];
-		addIgnore(element.filename, details);
-		const config = vscode.workspace.getConfiguration('tfsec');
-		var reRunOnIgnore = config.get('runOnIgnore', true);
-		if (reRunOnIgnore) {
-			vscode.commands.executeCommand("tfsec.run");
-		};
-	}));
-
-
-	context.subscriptions.push(vscode.commands.registerCommand('tfsec.ignoreAll', (element: TfsecTreeItem) => {
-		let ignoreMap = new Map<string, IgnoreDetails[]>();
-
-		for (let index = 0; index < issueProvider.resultData.length; index++) {
-			const r = issueProvider.resultData[index];
-			if (r === undefined) {
-				continue;
-			}
-			if (r.code !== element.code) { continue; }
-
-			let ignores = ignoreMap.get(r.filename);
-			if (!ignores) {
-				ignores = [];
-			}
-			ignores.push(new IgnoreDetails(r.code, r.startLine, r.endLine));
-			ignoreMap.set(r.filename, ignores);
-		}
-
-		ignoreMap.forEach((ignores: IgnoreDetails[], filename: string) => {
-			addIgnore(filename, ignores);
-		});
-		Promise.resolve();
-		const config = vscode.workspace.getConfiguration('tfsec');
-		var reRunOnIgnore = config.get('runOnIgnore', true);
-		if (reRunOnIgnore) {
-			vscode.commands.executeCommand("tfsec.run");
-		};
-	}));
-
-	context.subscriptions.push(vscode.commands.registerCommand("tfsec.run", () => {
-		let terminal = getOrCreateTfsecTerminal();
-		if (terminal === undefined) { vscode.window.showErrorMessage("Could not create terminal session"); return; }
-		terminal.show();
-		if (vscode.workspace && vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0) {
-			terminal.sendText(buildCommand(issueProvider.resultsStoragePath));
-		}
-	}));
-
-
-	context.subscriptions.push(vscode.commands.registerCommand("tfsec.updatebinary", () => {
-		const currentVersion = getInstalledTfsecVersion();
-
-		if (semver.lt(currentVersion, "0.39.39")) {
-			vscode.window.showInformationMessage(`Self updating was not introduced till v0.39.39 and you are running ${currentVersion}. Pleae update manually to at least v0.39.39`);
-		}
-
-		let terminal = getOrCreateTfsecTerminal();
-		if (terminal === undefined) { vscode.window.showErrorMessage("Could not create terminal session"); return; }
-		terminal.hide();
-		terminal.sendText("tfsec --update");
-	}));
+	context.subscriptions.push(vscode.commands.registerCommand('tfsec.ignore', (element: TfsecTreeItem) => ignoreInstance(element)));
+	context.subscriptions.push(vscode.commands.registerCommand('tfsec.ignoreAll', (element: TfsecTreeItem) => ignoreAllInstances(element, issueProvider)));
+	context.subscriptions.push(vscode.commands.registerCommand('tfsec.ignoreSeverity', (element: TfsecTreeItem) => ignoreAllInstances(element, issueProvider)));
+	context.subscriptions.push(vscode.commands.registerCommand("tfsec.run", () => runTfsec(issueProvider, outputChannel)));
+	context.subscriptions.push(vscode.commands.registerCommand("tfsec.updatebinary", () => updateBinary(outputChannel)));
 
 	context.subscriptions.push(vscode.window.onDidChangeActiveTextEditor(editor => {
 		activeEditor = editor;
@@ -110,9 +53,61 @@ export function activate(context: vscode.ExtensionContext) {
 	if (activeEditor) {
 		triggerDecoration();
 	}
-
 	showCurrentTfsecVersion();
 }
+
+function ignoreInstance(element: TfsecTreeItem) {
+	const details = [new IgnoreDetails(element.code, element.startLineNumber, element.endLineNumber)];
+	addIgnore(element.filename, details);
+
+	rerunIfRequired();
+}
+
+function rerunIfRequired() {
+	const config = vscode.workspace.getConfiguration('tfsec');
+	var reRunOnIgnore = config.get('runOnIgnore', true);
+	if (reRunOnIgnore) {
+		setTimeout(() => { vscode.commands.executeCommand("tfsec.run"); }, 1000);
+	} else {
+		vscode.window.showInformationMessage("You should refresh the treeview after ignoring");
+	};
+}
+
+function ignoreAllInstances(element: TfsecTreeItem, issueProvider: TfsecIssueProvider) {
+	var seenIgnores: string[] = [];
+	var ignoreMap = new Map<string, IgnoreDetails[]>();
+
+	let severityIgnore = element.treeItemType === TfsecTreeItemType.issueSeverity;
+
+	for (let index = 0; index < issueProvider.resultData.length; index++) {
+		var r = issueProvider.resultData[index];
+		if (r === undefined) {
+			continue;
+		}
+		let ignores = ignoreMap.get(r.filename);
+		if (!ignores) {
+			ignores = [];
+		}
+
+		if (severityIgnore && r.severity !== element.severity) { continue; }
+		if (!severityIgnore && r.code !== element.code) { continue; }
+
+		let ingoreKey = `${r.filename}:${r.code}:${r.startLine}:${r.endLine}`;
+		if (seenIgnores.includes(ingoreKey)) {
+			continue;
+		}
+		seenIgnores.push(ingoreKey);
+		ignores.push(new IgnoreDetails(r.code, r.startLine, r.endLine));
+		ignoreMap.set(r.filename, ignores);
+	}
+
+	ignoreMap.forEach((ignores: IgnoreDetails[], filename: string) => {
+		addIgnore(filename, ignores);
+	});
+	Promise.resolve();
+	rerunIfRequired();
+}
+
 
 function showCurrentTfsecVersion() {
 	const currentVersion = getInstalledTfsecVersion();
@@ -121,14 +116,9 @@ function showCurrentTfsecVersion() {
 	}
 }
 
-
-
-function buildCommand(resultsStoragePath: string) {
+function buildCommand(resultsStoragePath: string, scanPath: string) {
 	const config = vscode.workspace.getConfiguration('tfsec');
-	var binary = config.get('binaryPath', 'tfsec');
-	if (binary === "") {
-		binary = "tfsec";
-	}
+	const binary = getBinaryPath();
 
 	var command = [];
 	command.push(binary);
@@ -141,6 +131,52 @@ function buildCommand(resultsStoragePath: string) {
 
 	command.push('--format json');
 	command.push(`--out "${resultsStoragePath}"`);
+	command.push(scanPath);
 
 	return command.join(" ");
+}
+
+function runTfsec(issueProvider: TfsecIssueProvider, outputChannel: vscode.OutputChannel) {
+	outputChannel.appendLine("");
+	outputChannel.appendLine("Running tfsec to update results");
+
+	if (vscode.workspace && vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0
+		&& vscode.workspace.workspaceFolders[0] !== undefined) {
+
+		let command = buildCommand(issueProvider.resultsStoragePath, vscode.workspace.workspaceFolders[0].uri.fsPath);
+		try {
+			let result: Buffer = child.execSync(command);
+
+			outputChannel.appendLine(result.toString());
+		} catch (err) {
+		} finally {
+			setTimeout(() => { vscode.commands.executeCommand("tfsec.refresh"); }, 250);
+		}
+	}
+}
+
+function updateBinary(outputChannel: vscode.OutputChannel) {
+	outputChannel.show();
+	outputChannel.appendLine("");
+	outputChannel.appendLine("Checking the current version");
+	const currentVersion = getInstalledTfsecVersion();
+
+
+	if (currentVersion.includes("running a locally built version")) {
+		outputChannel.appendLine("You are using a locally built version which cannot be updated");
+	}
+
+	if (semver.lt(currentVersion, "0.39.39")) {
+		vscode.window.showInformationMessage(`Self updating was not introduced till v0.39.39 and you are running ${currentVersion}. Pleae update manually to at least v0.39.39`);
+	}
+	outputChannel.appendLine("Attempting to download the latest version");
+	var binary = getBinaryPath();
+	try {
+		let result: Buffer = child.execSync(binary + " --update --verbdose");
+		outputChannel.appendLine(result.toLocaleString());
+	} catch (err) {
+		vscode.window.showErrorMessage("There was a problem with the update, check the output window");
+		let errMsg = err as Error;
+		outputChannel.appendLine(errMsg.message);
+	}
 }

@@ -26,21 +26,13 @@ export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem
 			if (!fs.existsSync(this.resultsStoragePath)) {
 				fs.closeSync(fs.openSync(this.resultsStoragePath, 'w'));
 			}
-			// create the file watcher to refresh the tree when changes are made
-			fs.watch(this.resultsStoragePath, (eventType) => {
-				if (eventType !== "change") {
-					return;
-				}
-				vscode.window.showInformationMessage("tfsec run complete, results file updated");
-				// short wait for the file to be written before refreshing the tree
-				setTimeout(() => { vscode.commands.executeCommand("tfsec.refresh"); }, 250);
-			});
 		}
 	}
 
 	refresh(): void {
 		this.taintResults = true;
 		this._onDidChangeTreeData.fire();
+		vscode.window.showInformationMessage("tfsec results updated");
 	}
 
 	// when there is a tfsec output file, load the results

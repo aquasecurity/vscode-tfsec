@@ -1,6 +1,6 @@
 
 import * as vscode from 'vscode';
-import * as cp from 'child_process';
+import * as child from 'child_process';
 import { TfsecTreeItem } from './explorer/tfsec_treeitem';
 
 
@@ -75,35 +75,26 @@ const uniqueLocations = (input: TfsecTreeItem[]): TfsecTreeItem[] => {
     return output;
 };
 
-const getOrCreateTfsecTerminal = () => {
-    if (vscode.window.terminals.length > 0) {
-        for (let i = 0; i < vscode.window.terminals.length; i++) {
-            const t = vscode.window.terminals[i];
-            if (t === undefined) {
-                continue;
-            }
-            if (t.name === "tfsec") {
-                return t;
-            }
-        }
-    }
-    return vscode.window.createTerminal("tfsec");
-};
 
-const getInstalledTfsecVersion = () => {
+const getBinaryPath = () => {
     const config = vscode.workspace.getConfiguration('tfsec');
     var binary = config.get('binaryPath', 'tfsec');
     if (binary === "") {
         binary = "tfsec";
     }
+    return binary;
+}
+
+const getInstalledTfsecVersion = () => {
+    let binary = getBinaryPath();
 
     var command = [];
     command.push(binary);
     command.push('--version');
-    const getVersion = cp.execSync(command.join(" "), { "shell": "/usr/bin/bash" });
+    const getVersion = child.execSync(command.join(" "));
     return getVersion.toString();
 };
 
 const capitalize = (s: string) => (s && s[0] && s[0].toUpperCase() + s.slice(1).toLowerCase()) || "";
 
-export { sortByCode, sortBySeverity, uniqueLocations, getOrCreateTfsecTerminal, getInstalledTfsecVersion, capitalize };
+export { getBinaryPath, sortByCode, sortBySeverity, uniqueLocations, getInstalledTfsecVersion, capitalize };

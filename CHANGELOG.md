@@ -2,6 +2,13 @@
 
 All notable changes to the "tfsec" extension will be documented in this file.
 
+### 1.4.0
+- Use output channel instead of terminal for better cross platform command support
+- Remove explicit run command and use refresh to update the list with a fresh run
+- Add ignore all severity
+- Fix the refresh after ignores have been completed
+- Add more information to the update output  
+  
 ### 1.3.1
 - Update the repository link
 
