@@ -2,11 +2,10 @@ import * as vscode from 'vscode';
 import { addIgnore, triggerDecoration, IgnoreDetails } from './ignore';
 import { TfsecIssueProvider } from './explorer/issues_treeview';
 import { TfsecTreeItem } from './explorer/tfsec_treeitem';
-import { getInstalledTfsecVersion } from './utils';
+import { getInstalledTfsecVersion, getBinaryPath } from './utils';
 import { TfsecHelpProvider } from './explorer/check_helpview';
 import * as semver from 'semver';
 import * as child from 'child_process';
-import { TfSecCheck } from './tfsec_check';
 
 
 // this method is called when vs code is activated
@@ -38,7 +37,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(vscode.commands.registerCommand('tfsec.ignoreAll', (element: TfsecTreeItem) => ignoreAllInstances(element, issueProvider)));
 
-	context.subscriptions.push(vscode.commands.registerCommand("tfsec.run", () => runTfsec()));
+	context.subscriptions.push(vscode.commands.registerCommand("tfsec.run", () => runTfsec(issueProvider, outputChannel)));
 
 
 	context.subscriptions.push(vscode.commands.registerCommand("tfsec.updatebinary", () => {
@@ -117,14 +116,6 @@ function ignoreAllInstances(element: TfsecTreeItem, issueProvider: TfsecIssuePro
 	};
 }
 
-function getBinaryPath() {
-	const config = vscode.workspace.getConfiguration('tfsec');
-	var binary = config.get('binaryPath', 'tfsec');
-	if (binary === "") {
-		binary = "tfsec";
-	}
-	return binary;
-}
 
 function showCurrentTfsecVersion() {
 	const currentVersion = getInstalledTfsecVersion();

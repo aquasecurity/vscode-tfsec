@@ -76,20 +76,25 @@ const uniqueLocations = (input: TfsecTreeItem[]): TfsecTreeItem[] => {
 };
 
 
-const getInstalledTfsecVersion = () => {
+const getBinaryPath = () => {
     const config = vscode.workspace.getConfiguration('tfsec');
     var binary = config.get('binaryPath', 'tfsec');
     if (binary === "") {
         binary = "tfsec";
     }
+    return binary;
+}
+
+const getInstalledTfsecVersion = () => {
+    let binary = getBinaryPath();
 
     var command = [];
     command.push(binary);
     command.push('--version');
-    const getVersion = child.execSync(command.join(" "), { "shell": "/usr/bin/bash" });
+    const getVersion = child.execSync(command.join(" "));
     return getVersion.toString();
 };
 
 const capitalize = (s: string) => (s && s[0] && s[0].toUpperCase() + s.slice(1).toLowerCase()) || "";
 
-export { sortByCode, sortBySeverity, uniqueLocations, getInstalledTfsecVersion, capitalize };
+export { getBinaryPath, sortByCode, sortBySeverity, uniqueLocations, getInstalledTfsecVersion, capitalize };
