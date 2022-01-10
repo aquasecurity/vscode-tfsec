@@ -66,24 +66,42 @@ function getTfsecDescription(tfsecCode: string) {
 }
 
 
-
 const addIgnore = (filename: string, ignores: IgnoreDetails[]) => {
     Promise.resolve(vscode.workspace.openTextDocument(vscode.Uri.file(filename)).then((file: vscode.TextDocument) => {
         Promise.resolve(vscode.window.showTextDocument(file, 1, false).then(e => {
             e.edit(edit => {
                 for (let index = 0; index < ignores.length; index++) {
                     let element = ignores[index];
+
                     if (element === undefined) { continue; }
+                    const ignoreCode = `#tfsec:ignore:${element.code}`;
+                    var ignoreLine: vscode.TextLine | undefined;
+                    var startPos: number | undefined;
                     if (element.startLine === element.endLine) {
                         let errorLine = vscode.window.activeTextEditor?.document.lineAt(element.startLine);
                         if (errorLine !== null && errorLine !== undefined) {
-                            edit.insert(new vscode.Position(errorLine.lineNumber - 1, errorLine.firstNonWhitespaceCharacterIndex), `#tfsec:ignore:${element.code}\n`);
+                            let ignoreLinePos = errorLine.lineNumber - 1;
+                            ignoreLine = vscode.window.activeTextEditor?.document.lineAt(ignoreLinePos);
+                            startPos = ignoreLine?.text.length;
                         }
                     } else {
-                        edit.insert(new vscode.Position(element.startLine - 1, 0), `#tfsec:ignore:${element.code}\n`);
+                        let ignoreLinePos = element.startLine - 1;
+                        ignoreLine = vscode.window.activeTextEditor?.document.lineAt(ignoreLinePos);
+                    }
+                    if (ignoreLine === undefined || ignoreLine.text.includes(ignoreCode)) {
+                        continue;
+                    }
+                    if (ignoreLine.text.includes('tfsec:')) {
+                        edit.insert(new vscode.Position(element.startLine - 1, 0), `${ignoreCode} `);
+                    } else {
+                        if (startPos === undefined) {
+                            startPos = 0;
+                        }
+                        edit.insert(new vscode.Position(ignoreLine.lineNumber, startPos), ` ${ignoreCode}\n`);
                     }
                 }
             });
+            file.save();
         }));
     }));
 };
