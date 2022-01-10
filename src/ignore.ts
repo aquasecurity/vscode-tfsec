@@ -15,6 +15,10 @@ class IgnoreDetails {
     }
 }
 
+class FileIgnores {
+    public constructor(public readonly filename: string, public readonly ignores: IgnoreDetails[]) { }
+}
+
 const tfsecIgnoreDecoration = vscode.window.createTextEditorDecorationType({
     fontStyle: 'italic',
     color: new vscode.ThemeColor("editorGutter.commentRangeForeground"),
@@ -65,45 +69,58 @@ function getTfsecDescription(tfsecCode: string) {
     return check;
 }
 
+const addIgnore = async (filename: string, ignores: IgnoreDetails[], outputChannel: vscode.OutputChannel): Promise<void> => {
+    if (!filename.endsWith(".tf")) {
+        outputChannel.appendLine(`${filename} is not a tf file`);
+        return Promise.resolve();
+    }
 
-const addIgnore = (filename: string, ignores: IgnoreDetails[]) => {
-    Promise.resolve(vscode.workspace.openTextDocument(vscode.Uri.file(filename)).then((file: vscode.TextDocument) => {
-        Promise.resolve(vscode.window.showTextDocument(file, 1, false).then(e => {
-            e.edit(edit => {
-                for (let index = 0; index < ignores.length; index++) {
-                    let element = ignores[index];
+    ignores = ignores.sort(function (a: IgnoreDetails, b: IgnoreDetails): number {
+        if (a.startLine > b.startLine) {
+            return 1;
+        } else if (a.startLine < b.startLine) {
+            return -1;
+        }
+        return 0;
+    });
 
-                    if (element === undefined) { continue; }
-                    const ignoreCode = `#tfsec:ignore:${element.code}`;
-                    var ignoreLine: vscode.TextLine | undefined;
-                    var startPos: number | undefined;
-                    if (element.startLine === element.endLine) {
-                        let errorLine = vscode.window.activeTextEditor?.document.lineAt(element.startLine);
-                        if (errorLine !== null && errorLine !== undefined) {
-                            let ignoreLinePos = errorLine.lineNumber - 1;
-                            ignoreLine = vscode.window.activeTextEditor?.document.lineAt(ignoreLinePos);
-                            startPos = ignoreLine?.text.length;
-                        }
-                    } else {
-                        let ignoreLinePos = element.startLine - 1;
+
+    await vscode.window.showTextDocument(vscode.Uri.file(filename)).then(e => {
+        e.edit(edit => {
+            for (let index = 0; index < ignores.length; index++) {
+                let element = ignores[index];
+
+                if (element === undefined) { continue; }
+                const ignoreCode = `#tfsec:ignore:${element.code}`;
+                outputChannel.appendLine(`Adding ignore for ${ignoreCode}`);
+                var ignoreLine: vscode.TextLine | undefined;
+                var startPos: number | undefined;
+                if (element.startLine === element.endLine) {
+                    let errorLine = vscode.window.activeTextEditor?.document.lineAt(element.startLine);
+                    if (errorLine !== null && errorLine !== undefined) {
+                        let ignoreLinePos = element.startLine;
                         ignoreLine = vscode.window.activeTextEditor?.document.lineAt(ignoreLinePos);
+                        startPos = ignoreLine?.text.length;
                     }
-                    if (ignoreLine === undefined || ignoreLine.text.includes(ignoreCode)) {
-                        continue;
-                    }
-                    if (ignoreLine.text.includes('tfsec:')) {
-                        edit.insert(new vscode.Position(element.startLine - 1, 0), `${ignoreCode} `);
-                    } else {
-                        if (startPos === undefined) {
-                            startPos = 0;
-                        }
-                        edit.insert(new vscode.Position(ignoreLine.lineNumber, startPos), ` ${ignoreCode}\n`);
-                    }
+                } else {
+                    let ignoreLinePos = element.startLine;
+                    ignoreLine = vscode.window.activeTextEditor?.document.lineAt(ignoreLinePos);
                 }
-            });
-            file.save();
-        }));
-    }));
+                if (ignoreLine === undefined || ignoreLine.text.includes(ignoreCode)) {
+                    continue;
+                }
+                if (ignoreLine !== undefined && ignoreLine.text !== undefined && ignoreLine.text.includes('tfsec:')) {
+                    edit.insert(new vscode.Position(ignoreLine.lineNumber - 1, 0), `${ignoreCode} `);
+                } else {
+                    if (startPos === undefined) {
+                        startPos = 0;
+                    }
+                    edit.insert(new vscode.Position(ignoreLine.lineNumber - 1, 0), `${ignoreCode}\n`);
+                }
+            }
+        });
+        e.document.save();
+    });
 };
 
-export { addIgnore, triggerDecoration, IgnoreDetails };
+export { addIgnore, triggerDecoration, IgnoreDetails, FileIgnores };

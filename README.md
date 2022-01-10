@@ -27,6 +27,9 @@ Ignore codes will be automatically resolved and the description of the error wil
 
 ## Release Notes
 
+### 1.4.1
+- Fix updater 
+
 ### 1.4.0
 - Use output channel instead of terminal for better cross platform command support
 - Remove explicit run command and use refresh to update the list with a fresh run
