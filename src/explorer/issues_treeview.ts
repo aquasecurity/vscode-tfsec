@@ -54,7 +54,7 @@ export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem
 					this.taintResults = !this.taintResults;
 				}
 				catch {
-					console.debug(`Error loading results file ${this.resultsStoragePath}`)
+					console.debug(`Error loading results file ${this.resultsStoragePath}`);
 				}
 			}
 		} else {

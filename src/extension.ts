@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { addIgnore, triggerDecoration, IgnoreDetails } from './ignore';
+import { addIgnore, triggerDecoration, IgnoreDetails, FileIgnores } from './ignore';
 import { TfsecIssueProvider } from './explorer/issues_treeview';
 import { TfsecTreeItem, TfsecTreeItemType } from './explorer/tfsec_treeitem';
 import { getInstalledTfsecVersion, getBinaryPath } from './utils';
@@ -31,9 +31,9 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(vscode.commands.registerCommand('tfsec.refresh', () => issueProvider.refresh()));
 	context.subscriptions.push(vscode.commands.registerCommand('tfsec.version', () => showCurrentTfsecVersion()));
-	context.subscriptions.push(vscode.commands.registerCommand('tfsec.ignore', (element: TfsecTreeItem) => ignoreInstance(element)));
-	context.subscriptions.push(vscode.commands.registerCommand('tfsec.ignoreAll', (element: TfsecTreeItem) => ignoreAllInstances(element, issueProvider)));
-	context.subscriptions.push(vscode.commands.registerCommand('tfsec.ignoreSeverity', (element: TfsecTreeItem) => ignoreAllInstances(element, issueProvider)));
+	context.subscriptions.push(vscode.commands.registerCommand('tfsec.ignore', (element: TfsecTreeItem) => ignoreInstance(element, outputChannel)));
+	context.subscriptions.push(vscode.commands.registerCommand('tfsec.ignoreAll', (element: TfsecTreeItem) => ignoreAllInstances(element, issueProvider, outputChannel)));
+	context.subscriptions.push(vscode.commands.registerCommand('tfsec.ignoreSeverity', (element: TfsecTreeItem) => ignoreAllInstances(element, issueProvider, outputChannel)));
 	context.subscriptions.push(vscode.commands.registerCommand("tfsec.run", () => runTfsec(issueProvider, outputChannel)));
 	context.subscriptions.push(vscode.commands.registerCommand("tfsec.updatebinary", () => updateBinary(outputChannel)));
 
@@ -56,9 +56,9 @@ export function activate(context: vscode.ExtensionContext) {
 	showCurrentTfsecVersion();
 }
 
-function ignoreInstance(element: TfsecTreeItem) {
+function ignoreInstance(element: TfsecTreeItem, outputChannel: vscode.OutputChannel) {
 	const details = [new IgnoreDetails(element.code, element.startLineNumber, element.endLineNumber)];
-	addIgnore(element.filename, details);
+	addIgnore(element.filename, details, outputChannel);
 
 	rerunIfRequired();
 }
@@ -73,12 +73,14 @@ function rerunIfRequired() {
 	};
 }
 
-function ignoreAllInstances(element: TfsecTreeItem, issueProvider: TfsecIssueProvider) {
+async function ignoreAllInstances(element: TfsecTreeItem, issueProvider: TfsecIssueProvider, outputChannel: vscode.OutputChannel) {
+	outputChannel.show();
+	outputChannel.appendLine("\nSetting ignores - ");
+
 	var seenIgnores: string[] = [];
 	var ignoreMap = new Map<string, IgnoreDetails[]>();
 
 	let severityIgnore = element.treeItemType === TfsecTreeItemType.issueSeverity;
-
 	for (let index = 0; index < issueProvider.resultData.length; index++) {
 		var r = issueProvider.resultData[index];
 		if (r === undefined) {
@@ -101,11 +103,19 @@ function ignoreAllInstances(element: TfsecTreeItem, issueProvider: TfsecIssuePro
 		ignoreMap.set(r.filename, ignores);
 	}
 
+	var edits: FileIgnores[] = [];
 	ignoreMap.forEach((ignores: IgnoreDetails[], filename: string) => {
-		addIgnore(filename, ignores);
+		edits.push(new FileIgnores(filename, ignores));
 	});
-	Promise.resolve();
-	rerunIfRequired();
+
+	await edits.reduce(
+		(p, x) =>
+			p.then(_ => addIgnore(x.filename, x.ignores, outputChannel)),
+		Promise.resolve()
+	).then(() => {
+		outputChannel.appendLine("Checking if re-run is enabled....");
+		rerunIfRequired();
+	});
 }
 
 
@@ -137,6 +147,7 @@ function buildCommand(resultsStoragePath: string, scanPath: string) {
 }
 
 function runTfsec(issueProvider: TfsecIssueProvider, outputChannel: vscode.OutputChannel) {
+	outputChannel.show();
 	outputChannel.appendLine("");
 	outputChannel.appendLine("Running tfsec to update results");
 
@@ -172,7 +183,7 @@ function updateBinary(outputChannel: vscode.OutputChannel) {
 	outputChannel.appendLine("Attempting to download the latest version");
 	var binary = getBinaryPath();
 	try {
-		let result: Buffer = child.execSync(binary + " --update --verbdose");
+		let result: Buffer = child.execSync(binary + " --update --verbose");
 		outputChannel.appendLine(result.toLocaleString());
 	} catch (err) {
 		vscode.window.showErrorMessage("There was a problem with the update, check the output window");
