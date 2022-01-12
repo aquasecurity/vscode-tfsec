@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import { addIgnore, triggerDecoration, IgnoreDetails, FileIgnores } from './ignore';
 import { TfsecIssueProvider } from './explorer/issues_treeview';
 import { TfsecTreeItem, TfsecTreeItemType } from './explorer/tfsec_treeitem';
-import { getInstalledTfsecVersion, getBinaryPath } from './utils';
+import { getInstalledTfsecVersion, getBinaryPath, checkTfsecInstalled } from './utils';
 import { TfsecHelpProvider } from './explorer/check_helpview';
 import * as semver from 'semver';
 import * as child from 'child_process';
@@ -30,7 +30,7 @@ export function activate(context: vscode.ExtensionContext) {
 	});
 
 	context.subscriptions.push(vscode.commands.registerCommand('tfsec.refresh', () => issueProvider.refresh()));
-	context.subscriptions.push(vscode.commands.registerCommand('tfsec.version', () => showCurrentTfsecVersion()));
+	context.subscriptions.push(vscode.commands.registerCommand('tfsec.version', () => showCurrentTfsecVersion(outputChannel)));
 	context.subscriptions.push(vscode.commands.registerCommand('tfsec.ignore', (element: TfsecTreeItem) => ignoreInstance(element, outputChannel)));
 	context.subscriptions.push(vscode.commands.registerCommand('tfsec.ignoreAll', (element: TfsecTreeItem) => ignoreAllInstances(element, issueProvider, outputChannel)));
 	context.subscriptions.push(vscode.commands.registerCommand('tfsec.ignoreSeverity', (element: TfsecTreeItem) => ignoreAllInstances(element, issueProvider, outputChannel)));
@@ -53,7 +53,9 @@ export function activate(context: vscode.ExtensionContext) {
 	if (activeEditor) {
 		triggerDecoration();
 	}
-	showCurrentTfsecVersion();
+
+
+	showCurrentTfsecVersion(outputChannel);
 }
 
 function ignoreInstance(element: TfsecTreeItem, outputChannel: vscode.OutputChannel) {
@@ -119,7 +121,11 @@ async function ignoreAllInstances(element: TfsecTreeItem, issueProvider: TfsecIs
 }
 
 
-function showCurrentTfsecVersion() {
+function showCurrentTfsecVersion(outputChannel: vscode.OutputChannel) {
+	if (!checkTfsecInstalled(outputChannel)) {
+		vscode.window.showErrorMessage("tfsec could not be found, check Output window");
+		return;
+	}
 	const currentVersion = getInstalledTfsecVersion();
 	if (currentVersion) {
 		vscode.window.showInformationMessage(`Current tfsec version is ${currentVersion}`);
@@ -139,6 +145,10 @@ function buildCommand(resultsStoragePath: string, scanPath: string) {
 		command.push('--exclude-downloaded-modules');
 	}
 
+	if (config.get<boolean>('debug')) {
+		command.push('--verbose');
+	}
+
 	command.push('--format json');
 	command.push(`--out "${resultsStoragePath}"`);
 	command.push(scanPath);
@@ -151,16 +161,27 @@ function runTfsec(issueProvider: TfsecIssueProvider, outputChannel: vscode.Outpu
 	outputChannel.appendLine("");
 	outputChannel.appendLine("Running tfsec to update results");
 
+	if (!checkTfsecInstalled(outputChannel)) {
+		return;
+	}
+
 	if (vscode.workspace && vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0
 		&& vscode.workspace.workspaceFolders[0] !== undefined) {
 
 		let command = buildCommand(issueProvider.resultsStoragePath, vscode.workspace.workspaceFolders[0].uri.fsPath);
+		outputChannel.appendLine(`command: ${command}`);
 		try {
 			let result: Buffer = child.execSync(command);
-
 			outputChannel.appendLine(result.toString());
 		} catch (err) {
+			let errMsg = (err as Error);
+			const config = vscode.workspace.getConfiguration('tfsec');
+			if (config.get<boolean>('debug')) {
+				outputChannel.appendLine(errMsg.toString());
+			}
+
 		} finally {
+			outputChannel.appendLine("Reloading the treeview");
 			setTimeout(() => { vscode.commands.executeCommand("tfsec.refresh"); }, 250);
 		}
 	}
@@ -170,9 +191,12 @@ function updateBinary(outputChannel: vscode.OutputChannel) {
 	outputChannel.show();
 	outputChannel.appendLine("");
 	outputChannel.appendLine("Checking the current version");
+
+	if (!checkTfsecInstalled(outputChannel)) {
+		return;
+	}
+
 	const currentVersion = getInstalledTfsecVersion();
-
-
 	if (currentVersion.includes("running a locally built version")) {
 		outputChannel.appendLine("You are using a locally built version which cannot be updated");
 	}

@@ -27,6 +27,11 @@ Ignore codes will be automatically resolved and the description of the error wil
 
 ## Release Notes
 
+### 1.5.0
+- Check for tfsec before running any commands
+- Add debug setting for richer output option
+- remove some redundant logging
+
 ### 1.4.1
 - Fix updater 
 

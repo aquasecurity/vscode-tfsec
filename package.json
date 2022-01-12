@@ -59,6 +59,11 @@
           "type": "boolean",
           "default": "true",
           "description": "Automatically rerun tfsec when a check failure is ignored"
+        },
+        "tfsec.debug": {
+          "type": "boolean",
+          "default": "false",
+          "description": "Run tfsec with vebose flag to get more information"
         }
       }
     },
