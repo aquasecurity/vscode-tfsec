@@ -2,6 +2,11 @@
 
 All notable changes to the "tfsec" extension will be documented in this file.
 
+### 1.5.0
+- Check for tfsec before running any commands
+- Add debug setting for richer output option
+- remove some redundant logging
+
 ### 1.4.0
 - Use output channel instead of terminal for better cross platform command support
 - Remove explicit run command and use refresh to update the list with a fresh run

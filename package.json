@@ -3,7 +3,7 @@
   "displayName": "tfsec",
   "publisher": "tfsec",
   "description": "tfsec integration for Visual Studio Code",
-  "version": "1.4.1",
+  "version": "1.5.0",
   "engines": {
     "vscode": "^1.54.0"
   },
@@ -59,6 +59,11 @@
           "type": "boolean",
           "default": "true",
           "description": "Automatically rerun tfsec when a check failure is ignored"
+        },
+        "tfsec.debug": {
+          "type": "boolean",
+          "default": "false",
+          "description": "Run tfsec with vebose flag to get more information"
         }
       }
     },

@@ -32,7 +32,6 @@ export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem
 	refresh(): void {
 		this.taintResults = true;
 		this._onDidChangeTreeData.fire();
-		vscode.window.showInformationMessage("tfsec results updated");
 	}
 
 	// when there is a tfsec output file, load the results
