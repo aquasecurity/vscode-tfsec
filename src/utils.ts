@@ -2,7 +2,6 @@
 import * as vscode from 'vscode';
 import * as child from 'child_process';
 import { TfsecTreeItem } from './explorer/tfsec_treeitem';
-import { existsSync } from 'fs';
 
 
 function getSeverityPosition(severity: string): number {
@@ -90,8 +89,12 @@ const getBinaryPath = () => {
 const checkTfsecInstalled = (outputChannel: vscode.OutputChannel): boolean => {
     const binaryPath = getBinaryPath();
 
-    if (!existsSync(binaryPath)) {
+    try {
+        child.execSync(binaryPath);
+    }
+    catch (err) {
         outputChannel.appendLine(`tfsec not found. Check the tfsec extension settings to ensure the path is correct. [${binaryPath}]`);
+        return false;
     }
     return true;
 };

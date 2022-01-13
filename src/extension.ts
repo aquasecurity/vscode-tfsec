@@ -179,7 +179,7 @@ function runTfsec(issueProvider: TfsecIssueProvider, outputChannel: vscode.Outpu
 		});
 
 		execution.stderr.on('data', function (data) {
-			outputChannel.appendLine(`ERROR: ${data.toString()}`);
+			outputChannel.appendLine(data.toString());
 		});
 
 		execution.on('exit', function (code) {
