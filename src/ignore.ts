@@ -110,7 +110,7 @@ const addIgnore = async (filename: string, ignores: IgnoreDetails[], outputChann
                     continue;
                 }
                 if (ignoreLine !== undefined && ignoreLine.text !== undefined && ignoreLine.text.includes('tfsec:')) {
-                    edit.insert(new vscode.Position(ignoreLine.lineNumber - 1, 0), `${ignoreCode} `);
+                    edit.insert(new vscode.Position(ignoreLine.lineNumber - 1, 0), `${ignoreCode}\n`);
                 } else {
                     if (startPos === undefined) {
                         startPos = 0;

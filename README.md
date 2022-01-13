@@ -27,6 +27,11 @@ Ignore codes will be automatically resolved and the description of the error wil
 
 ## Release Notes
 
+### 1.6.0
+- Switch from ExecSync to Spawn for running tfsec
+- Don't show the output window so much, we know its there
+- Update mass ignores to always add a new line
+
 ### 1.5.0
 - Check for tfsec before running any commands
 - Add debug setting for richer output option
@@ -48,39 +53,4 @@ Ignore codes will be automatically resolved and the description of the error wil
 ### 1.3.0
 - Remove dependency on codes resource for resolving legacy IDs
 
-### 1.2.2
-- Add support for AVD ID
-
-### 1.2.1
-- Update the logo to the AquaSecurity one
-
-### 1.2.0
-- Restructure explorer to be by severity
-- Fix the Help view for the checks
-- Add "Ignore all" to ignore all instances of an issue
-
-### 1.1.11
-- Add menu button to update tfsec from within vscode (post tfsec v0.39.39)
-- Add command to show the current version of tfsec running
-
-### 1.1.10
-- Updating the codes to support latest tfsec
-
-### 1.1.9
-- Handle deprecated checks better in the help window
-
-### 1.1.8
-- Add setting to choose if auto running tfsec after ignore should happen
-
-### 1.1.7
-- Reload the tree when tfsec is run
-- move single line ignores above issue
-
-### 1.1.6
-- Add tfsec ignore on a same line when single line issue
-- add local check help to the Tfsec navigation pane
-- restructure code for easier disable of plugin
-
-### 1.1.5
-- Only use a single terminal for tfsec, don't create a new one on each run
-- Add option on extension settings to turn off the ignore code resolution
+#### See Change log for more information

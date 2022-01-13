@@ -83,6 +83,7 @@ const getBinaryPath = () => {
     if (binary === "") {
         binary = "tfsec";
     }
+
     return binary;
 };
 
