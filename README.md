@@ -6,8 +6,8 @@ This VS Code extension is for [tfsec](https://aquasecurity.github.io/tfsec/lates
 
 ## Features
 
-### Issue Explorer
-The issue explorer displays an an organised view the issues that have been found in the current workspace. 
+### Findings Explorer
+The Findings Explorer displays an an organised view the issues that have been found in the current workspace. 
 
 The code runs tfsec in a VS Code integrated terminal so you can see the the output - when it is complete, press the refresh button to reload.
 
@@ -27,8 +27,13 @@ Ignore codes will be automatically resolved and the description of the error wil
 
 ## Release Notes
 
+### 1.6.2
+- Refactor the runner to clean up extension code
+- clean up some redundant code
+
 ### 1.6.1
 - Prettify with nice icons
+- 
 ### 1.6.0
 - Switch from ExecSync to Spawn for running tfsec
 - Don't show the output window so much, we know its there
