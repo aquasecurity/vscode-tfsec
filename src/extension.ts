@@ -10,12 +10,10 @@ import * as child from 'child_process';
 
 // this method is called when vs code is activated
 export function activate(context: vscode.ExtensionContext) {
-	console.log('tfsec extension activated');
 	const helpProvider = new TfsecHelpProvider();
-	let activeEditor = vscode.window.activeTextEditor;
 	const issueProvider = new TfsecIssueProvider(context);
+	let activeEditor = vscode.window.activeTextEditor;
 	var outputChannel = vscode.window.createOutputChannel("tfsec");
-	context.subscriptions.push(vscode.window.registerWebviewViewProvider("tfsec.helpview", helpProvider));
 
 	// creating the issue tree explicitly to allow access to events
 	let issueTree = vscode.window.createTreeView("tfsec.issueview", {
@@ -29,6 +27,7 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	});
 
+	context.subscriptions.push(vscode.window.registerWebviewViewProvider("tfsec.helpview", helpProvider));
 	context.subscriptions.push(vscode.commands.registerCommand('tfsec.refresh', () => issueProvider.refresh()));
 	context.subscriptions.push(vscode.commands.registerCommand('tfsec.version', () => showCurrentTfsecVersion(outputChannel)));
 	context.subscriptions.push(vscode.commands.registerCommand('tfsec.ignore', (element: TfsecTreeItem) => ignoreInstance(element, outputChannel)));
@@ -53,8 +52,6 @@ export function activate(context: vscode.ExtensionContext) {
 	if (activeEditor) {
 		triggerDecoration();
 	}
-
-
 	showCurrentTfsecVersion(outputChannel);
 }
 
@@ -120,7 +117,6 @@ async function ignoreAllInstances(element: TfsecTreeItem, issueProvider: TfsecIs
 	});
 }
 
-
 function showCurrentTfsecVersion(outputChannel: vscode.OutputChannel) {
 	if (!checkTfsecInstalled(outputChannel)) {
 		vscode.window.showErrorMessage("tfsec could not be found, check Output window");
@@ -165,7 +161,6 @@ function runTfsec(issueProvider: TfsecIssueProvider, outputChannel: vscode.Outpu
 	}
 
 	const binary = getBinaryPath();
-
 	if (vscode.workspace && vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0
 		&& vscode.workspace.workspaceFolders[0] !== undefined) {
 
