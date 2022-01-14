@@ -26,7 +26,7 @@ export class TfsecTreeItem extends vscode.TreeItem {
 			this.tooltip = `${check.codeDescription}`;
 			this.code = check.code;
 			this.provider = check.provider;
-			this.description = check.codeDescription;
+
 
 			if (collapsibleState === vscode.TreeItemCollapsibleState.None) {
 				this.treeItemType = TfsecTreeItemType.issueLocation;
@@ -34,14 +34,20 @@ export class TfsecTreeItem extends vscode.TreeItem {
 				this.startLineNumber = check.startLine;
 				this.endLineNumber = check.endLine;
 				this.filename = check.filename;
+				this.iconPath = vscode.ThemeIcon.File;
+				this.resourceUri = vscode.Uri.parse('_.tf');
 			} else {
 				this.treeItemType = TfsecTreeItemType.issueCode;
+				// this.description = check.codeDescription;
 				this.contextValue = "TFSEC_CODE";
 				this.startLineNumber = 0;
 				this.endLineNumber = 0;
 				this.filename = "";
+				this.iconPath = {
+					light: path.join(__filename, '..', '..', '..', 'resources', 'light', 'tfsec.svg'),
+					dark: path.join(__filename, '..', '..', '..', 'resources', 'dark', 'tfsec.svg')
+				};
 			}
-
 		} else {
 			this.code = "";
 			this.provider = "";
@@ -50,15 +56,25 @@ export class TfsecTreeItem extends vscode.TreeItem {
 			this.filename = "";
 			this.treeItemType = TfsecTreeItemType.issueSeverity;
 			this.contextValue = "TFSEC_SEVERITY";
+			this.iconPath = {
+				light: path.join(__filename, '..', '..', '..', 'resources', this.severityIcon(this.severity)),
+				dark: path.join(__filename, '..', '..', '..', 'resources', this.severityIcon(this.severity))
+			};
 		}
-
-
-
 	}
 
-	iconPath = {
-		light: path.join(__filename, '..', 'resources', 'light', 'shield.svg'),
-		dark: path.join(__filename, '..', 'resources', 'dark', 'shield.svg')
+	severityIcon = (severity: string): string => {
+		switch (severity) {
+			case "Critical":
+				return 'critical.svg';
+			case "High":
+				return 'high.svg';
+			case "Medium":
+				return 'medium.svg';
+			case "Low":
+				return 'low.svg';
+		}
+		return 'unknown.svg';
 	};
 }
 

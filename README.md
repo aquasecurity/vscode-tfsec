@@ -27,6 +27,8 @@ Ignore codes will be automatically resolved and the description of the error wil
 
 ## Release Notes
 
+### 1.6.1
+- Prettify with nice icons
 ### 1.6.0
 - Switch from ExecSync to Spawn for running tfsec
 - Don't show the output window so much, we know its there

@@ -2,6 +2,8 @@
 
 All notable changes to the "tfsec" extension will be documented in this file.
 
+### 1.6.1
+- Prettify with nice icons
 ### 1.6.0
 - Switch from ExecSync to Spawn for running tfsec
 - Don't show the output window so much, we know its there
