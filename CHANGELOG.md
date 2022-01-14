@@ -2,6 +2,11 @@
 
 All notable changes to the "tfsec" extension will be documented in this file.
 
+### 1.6.0
+- Switch from ExecSync to Spawn for running tfsec
+- Don't show the output window so much, we know its there
+- Update mass ignores to always add a new line
+
 ### 1.5.0
 - Check for tfsec before running any commands
 - Add debug setting for richer output option

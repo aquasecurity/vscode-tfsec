@@ -2,7 +2,6 @@
 import * as vscode from 'vscode';
 import * as child from 'child_process';
 import { TfsecTreeItem } from './explorer/tfsec_treeitem';
-import { existsSync } from 'fs';
 
 
 function getSeverityPosition(severity: string): number {
@@ -83,14 +82,22 @@ const getBinaryPath = () => {
     if (binary === "") {
         binary = "tfsec";
     }
+
     return binary;
 };
 
 const checkTfsecInstalled = (outputChannel: vscode.OutputChannel): boolean => {
     const binaryPath = getBinaryPath();
 
-    if (!existsSync(binaryPath)) {
+    var command = [];
+    command.push(binaryPath);
+    command.push('--help');
+    try {
+        child.execSync(command.join(' '));
+    }
+    catch (err) {
         outputChannel.appendLine(`tfsec not found. Check the tfsec extension settings to ensure the path is correct. [${binaryPath}]`);
+        return false;
     }
     return true;
 };
@@ -101,10 +108,10 @@ const getInstalledTfsecVersion = () => {
     var command = [];
     command.push(binary);
     command.push('--version');
-    const getVersion = child.execSync(command.join(" "));
+    const getVersion = child.execSync(command.join(' '));
     return getVersion.toString();
 };
 
-const capitalize = (s: string) => (s && s[0] && s[0].toUpperCase() + s.slice(1).toLowerCase()) || "";
+const capitalize = (s: string) => (s && s[0] && s[0].toUpperCase() + s.slice(1).toLowerCase()) || '';
 
 export { getBinaryPath, sortByCode, sortBySeverity, uniqueLocations, getInstalledTfsecVersion, capitalize, checkTfsecInstalled };

@@ -10,12 +10,10 @@ import * as child from 'child_process';
 
 // this method is called when vs code is activated
 export function activate(context: vscode.ExtensionContext) {
-	console.log('tfsec extension activated');
 	const helpProvider = new TfsecHelpProvider();
-	let activeEditor = vscode.window.activeTextEditor;
 	const issueProvider = new TfsecIssueProvider(context);
+	let activeEditor = vscode.window.activeTextEditor;
 	var outputChannel = vscode.window.createOutputChannel("tfsec");
-	context.subscriptions.push(vscode.window.registerWebviewViewProvider("tfsec.helpview", helpProvider));
 
 	// creating the issue tree explicitly to allow access to events
 	let issueTree = vscode.window.createTreeView("tfsec.issueview", {
@@ -29,6 +27,7 @@ export function activate(context: vscode.ExtensionContext) {
 		}
 	});
 
+	context.subscriptions.push(vscode.window.registerWebviewViewProvider("tfsec.helpview", helpProvider));
 	context.subscriptions.push(vscode.commands.registerCommand('tfsec.refresh', () => issueProvider.refresh()));
 	context.subscriptions.push(vscode.commands.registerCommand('tfsec.version', () => showCurrentTfsecVersion(outputChannel)));
 	context.subscriptions.push(vscode.commands.registerCommand('tfsec.ignore', (element: TfsecTreeItem) => ignoreInstance(element, outputChannel)));
@@ -53,8 +52,6 @@ export function activate(context: vscode.ExtensionContext) {
 	if (activeEditor) {
 		triggerDecoration();
 	}
-
-
 	showCurrentTfsecVersion(outputChannel);
 }
 
@@ -120,7 +117,6 @@ async function ignoreAllInstances(element: TfsecTreeItem, issueProvider: TfsecIs
 	});
 }
 
-
 function showCurrentTfsecVersion(outputChannel: vscode.OutputChannel) {
 	if (!checkTfsecInstalled(outputChannel)) {
 		vscode.window.showErrorMessage("tfsec could not be found, check Output window");
@@ -132,12 +128,10 @@ function showCurrentTfsecVersion(outputChannel: vscode.OutputChannel) {
 	}
 }
 
-function buildCommand(resultsStoragePath: string, scanPath: string) {
+function buildCommand(resultsStoragePath: string, scanPath: string): string[] {
 	const config = vscode.workspace.getConfiguration('tfsec');
-	const binary = getBinaryPath();
-
 	var command = [];
-	command.push(binary);
+
 	if (config.get<boolean>('fullDepthSearch')) {
 		command.push('--force-all-dirs');
 	}
@@ -149,15 +143,16 @@ function buildCommand(resultsStoragePath: string, scanPath: string) {
 		command.push('--verbose');
 	}
 
-	command.push('--format json');
-	command.push(`--out "${resultsStoragePath}"`);
+	// add soft fail for exit code
+	command.push('--soft-fail');
+	command.push('--format=json');
+	command.push(`--out=${resultsStoragePath}`);
 	command.push(scanPath);
 
-	return command.join(" ");
+	return command;
 }
 
 function runTfsec(issueProvider: TfsecIssueProvider, outputChannel: vscode.OutputChannel) {
-	outputChannel.show();
 	outputChannel.appendLine("");
 	outputChannel.appendLine("Running tfsec to update results");
 
@@ -165,25 +160,32 @@ function runTfsec(issueProvider: TfsecIssueProvider, outputChannel: vscode.Outpu
 		return;
 	}
 
+	const binary = getBinaryPath();
 	if (vscode.workspace && vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0
 		&& vscode.workspace.workspaceFolders[0] !== undefined) {
 
 		let command = buildCommand(issueProvider.resultsStoragePath, vscode.workspace.workspaceFolders[0].uri.fsPath);
 		outputChannel.appendLine(`command: ${command}`);
-		try {
-			let result: Buffer = child.execSync(command);
-			outputChannel.appendLine(result.toString());
-		} catch (err) {
-			let errMsg = (err as Error);
-			const config = vscode.workspace.getConfiguration('tfsec');
-			if (config.get<boolean>('debug')) {
-				outputChannel.appendLine(errMsg.toString());
-			}
 
-		} finally {
-			outputChannel.appendLine("Reloading the treeview");
+		var execution = child.spawn(binary, command);
+
+		execution.stdout.on('data', function (data) {
+			outputChannel.appendLine(data.toString());
+		});
+
+		execution.stderr.on('data', function (data) {
+			outputChannel.appendLine(data.toString());
+		});
+
+		execution.on('exit', function (code) {
+			if (code !== 0) {
+				vscode.window.showErrorMessage("tfsec failed to run");
+				return;
+			};
+			vscode.window.showInformationMessage('tfsec ran successfully, updating results');
+			outputChannel.appendLine('Reloading the issue explorer content');
 			setTimeout(() => { vscode.commands.executeCommand("tfsec.refresh"); }, 250);
-		}
+		});
 	}
 }
 
