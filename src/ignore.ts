@@ -1,5 +1,7 @@
 import * as vscode from 'vscode';
 import { CheckManager } from './check_manager';
+import { TfsecIssueProvider } from './explorer/issues_treeview';
+import { TfsecTreeItem, TfsecTreeItemType } from './explorer/tfsec_treeitem';
 
 let timeout: NodeJS.Timer | undefined = undefined;
 let activeEditor = vscode.window.activeTextEditor;
@@ -69,7 +71,17 @@ function getTfsecDescription(tfsecCode: string) {
     return check;
 }
 
-const addIgnore = async (filename: string, ignores: IgnoreDetails[], outputChannel: vscode.OutputChannel): Promise<void> => {
+function rerunIfRequired() {
+    const config = vscode.workspace.getConfiguration('tfsec');
+    var reRunOnIgnore = config.get('runOnIgnore', true);
+    if (reRunOnIgnore) {
+        setTimeout(() => { vscode.commands.executeCommand("tfsec.run"); }, 1000);
+    } else {
+        vscode.window.showInformationMessage("You should refresh the treeview after ignoring");
+    };
+}
+
+async function addIgnore(filename: string, ignores: IgnoreDetails[], outputChannel: vscode.OutputChannel): Promise<void> {
     if (!filename.endsWith(".tf")) {
         outputChannel.appendLine(`${filename} is not a tf file`);
         return Promise.resolve();
@@ -123,4 +135,58 @@ const addIgnore = async (filename: string, ignores: IgnoreDetails[], outputChann
     });
 };
 
-export { addIgnore, triggerDecoration, IgnoreDetails, FileIgnores };
+const ignoreInstance = (element: TfsecTreeItem, outputChannel: vscode.OutputChannel) => {
+    const details = [new IgnoreDetails(element.code, element.startLineNumber, element.endLineNumber)];
+    addIgnore(element.filename, details, outputChannel);
+
+    rerunIfRequired();
+};
+
+
+const ignoreAllInstances = async (element: TfsecTreeItem, issueProvider: TfsecIssueProvider, outputChannel: vscode.OutputChannel) => {
+    outputChannel.show();
+    outputChannel.appendLine("\nSetting ignores - ");
+
+    var seenIgnores: string[] = [];
+    var ignoreMap = new Map<string, IgnoreDetails[]>();
+
+    let severityIgnore = element.treeItemType === TfsecTreeItemType.issueSeverity;
+    for (let index = 0; index < issueProvider.resultData.length; index++) {
+        var r = issueProvider.resultData[index];
+        if (r === undefined) {
+            continue;
+        }
+        let ignores = ignoreMap.get(r.filename);
+        if (!ignores) {
+            ignores = [];
+        }
+
+        if (severityIgnore && r.severity !== element.severity) { continue; }
+        if (!severityIgnore && r.code !== element.code) { continue; }
+
+        let ingoreKey = `${r.filename}:${r.code}:${r.startLine}:${r.endLine}`;
+        if (seenIgnores.includes(ingoreKey)) {
+            continue;
+        }
+        seenIgnores.push(ingoreKey);
+        ignores.push(new IgnoreDetails(r.code, r.startLine, r.endLine));
+        ignoreMap.set(r.filename, ignores);
+    }
+
+    var edits: FileIgnores[] = [];
+    ignoreMap.forEach((ignores: IgnoreDetails[], filename: string) => {
+        edits.push(new FileIgnores(filename, ignores));
+    });
+
+    await edits.reduce(
+        (p, x) =>
+            p.then(_ => addIgnore(x.filename, x.ignores, outputChannel)),
+        Promise.resolve()
+    ).then(() => {
+        outputChannel.appendLine("Checking if re-run is enabled....");
+        rerunIfRequired();
+    });
+};
+
+
+export { ignoreAllInstances, ignoreInstance, triggerDecoration, IgnoreDetails, FileIgnores };

@@ -3,7 +3,7 @@
   "displayName": "tfsec",
   "publisher": "tfsec",
   "description": "tfsec integration for Visual Studio Code",
-  "version": "1.6.1",
+  "version": "1.6.2",
   "engines": {
     "vscode": "^1.54.0"
   },
@@ -118,16 +118,15 @@
       "tfsec": [
         {
           "id": "tfsec.issueview",
-          "name": "Issue Explorer",
+          "name": "Findings Explorer",
           "icon": "media/tfsec.svg",
-          "contextualTitle": "Issue Explorer"
+          "contextualTitle": "Findings Explorer"
         },
         {
           "id": "tfsec.helpview",
-          "name": "Check Help",
+          "name": "Findings Help",
           "type": "webview",
-          "contextualTitle": "Issue Help",
-          "visibility": "collapsed"
+          "contextualTitle": "Findings Help"
         }
       ]
     },

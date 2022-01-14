@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import { sortByCode, sortBySeverity, uniqueLocations } from '../utils';
+import { sortByCode, sortBySeverity, uniqueLocations } from './utils';
 import { CheckResult, CheckSeverity } from './check_result';
 import { TfsecTreeItem, TfsecTreeItemType } from './tfsec_treeitem';
 
@@ -81,7 +81,6 @@ export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem
 	private getCurrentTfsecSeverities(): TfsecTreeItem[] {
 		var results: TfsecTreeItem[] = [];
 		var resolvedSeverities: string[] = [];
-
 
 		if (this.taintResults) {
 			this.loadResultData();

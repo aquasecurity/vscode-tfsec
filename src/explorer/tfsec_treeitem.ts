@@ -21,13 +21,15 @@ export class TfsecTreeItem extends vscode.TreeItem {
 	) {
 		super(title, collapsibleState);
 		this.severity = check.severity;
+		this.code = "";
+		this.provider = "";
+		this.startLineNumber = 0;
+		this.endLineNumber = 0;
+		this.filename = "";
 
 		if (check instanceof CheckResult) {
-			this.tooltip = `${check.codeDescription}`;
 			this.code = check.code;
 			this.provider = check.provider;
-
-
 			if (collapsibleState === vscode.TreeItemCollapsibleState.None) {
 				this.treeItemType = TfsecTreeItemType.issueLocation;
 				this.contextValue = "TFSEC_FILE_LOCATION";
@@ -35,25 +37,17 @@ export class TfsecTreeItem extends vscode.TreeItem {
 				this.endLineNumber = check.endLine;
 				this.filename = check.filename;
 				this.iconPath = vscode.ThemeIcon.File;
-				this.resourceUri = vscode.Uri.parse('_.tf');
+				this.resourceUri = vscode.Uri.parse(check.filename);
 			} else {
 				this.treeItemType = TfsecTreeItemType.issueCode;
-				// this.description = check.codeDescription;
 				this.contextValue = "TFSEC_CODE";
-				this.startLineNumber = 0;
-				this.endLineNumber = 0;
-				this.filename = "";
+				this.tooltip = `${check.codeDescription}`;
 				this.iconPath = {
 					light: path.join(__filename, '..', '..', '..', 'resources', 'light', 'tfsec.svg'),
 					dark: path.join(__filename, '..', '..', '..', 'resources', 'dark', 'tfsec.svg')
 				};
 			}
 		} else {
-			this.code = "";
-			this.provider = "";
-			this.startLineNumber = 0;
-			this.endLineNumber = 0;
-			this.filename = "";
 			this.treeItemType = TfsecTreeItemType.issueSeverity;
 			this.contextValue = "TFSEC_SEVERITY";
 			this.iconPath = {
