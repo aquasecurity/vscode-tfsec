@@ -27,6 +27,15 @@ const sortByCode = (a: TfsecTreeItem, b: TfsecTreeItem): number => {
     return 0;
 };
 
+const sortResults = (a: any, b: any): number => {
+    if (a.filename > b.filename) {
+        return 1;
+    } else if (a.filename < b.filename) {
+        return -1;
+    }
+    return 0;
+};
+
 const sortBySeverity = (a: TfsecTreeItem, b: TfsecTreeItem): number => {
     if (getSeverityPosition(a.severity) > getSeverityPosition(b.severity)) {
         return 1;
@@ -34,6 +43,15 @@ const sortBySeverity = (a: TfsecTreeItem, b: TfsecTreeItem): number => {
         return -1;
     }
 
+    return 0;
+};
+
+const sortByFilename = (a: TfsecTreeItem, b: TfsecTreeItem): number => {
+    if (a.filename > b.filename) {
+        return 1;
+    } else if (a.filename < b.filename) {
+        return -1;
+    }
     return 0;
 };
 
@@ -70,11 +88,11 @@ const uniqueLocations = (input: TfsecTreeItem[]): TfsecTreeItem[] => {
         }
     }
 
-    return output;
+    return output.sort(sortByFilename);
 };
 
 
 
 const capitalize = (s: string) => (s && s[0] && s[0].toUpperCase() + s.slice(1).toLowerCase()) || '';
 
-export { sortByCode, sortBySeverity, uniqueLocations, capitalize };
+export { sortByCode, sortBySeverity, sortResults, uniqueLocations, capitalize };
