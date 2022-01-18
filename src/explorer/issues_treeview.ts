@@ -4,7 +4,6 @@ import * as path from 'path';
 import { sortByCode, sortBySeverity, sortResults, uniqueLocations } from './utils';
 import { CheckResult, CheckSeverity } from './check_result';
 import { TfsecTreeItem, TfsecTreeItemType } from './tfsec_treeitem';
-import { Glob } from 'glob';
 
 export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem> {
 
@@ -41,28 +40,27 @@ export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem
 		_self.resultData = [];
 		if (this.resultsStoragePath !== "" && vscode.workspace && vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders[0]) {
 			this.rootpath = vscode.workspace.workspaceFolders[0].uri.fsPath;
-			let resultGlobber = new Glob(`${this.resultsStoragePath}/*_results.json`, {}, function (_err, files) {
-				files.forEach(element => {
-					if (fs.existsSync(element)) {
-						let content = fs.readFileSync(element, 'utf8');
-						try {
-							const data = JSON.parse(content);
-							if (data === null || data.results === null) {
-								return;
-							}
-							let results = data.results.sort(sortResults);
-							for (let i = 0; i < results.length; i++) {
-								const element = results[i];
-								_self.resultData.push(new CheckResult(element));
-							}
+			var files = fs.readdirSync(this.resultsStoragePath).filter(fn => fn.endsWith('_results.json'));
+			Promise.resolve(files.forEach(file => {
+				const resultFile = path.join(this.resultsStoragePath, file);
+				if (fs.existsSync(resultFile)) {
+					let content = fs.readFileSync(resultFile, 'utf8');
+					try {
+						const data = JSON.parse(content);
+						if (data === null || data.results === null) {
+							return;
 						}
-						catch {
-							console.debug(`Error loading results file ${element}`);
+						let results = data.results.sort(sortResults);
+						for (let i = 0; i < results.length; i++) {
+							const element = results[i];
+							_self.resultData.push(new CheckResult(element));
 						}
 					}
-				});
-			});
-			resultGlobber.on('end', function () {
+					catch {
+						console.debug(`Error loading results file ${file}`);
+					}
+				}
+			})).then(() => {
 				_self.taintResults = !_self.taintResults;
 				_self._onDidChangeTreeData.fire();
 			});

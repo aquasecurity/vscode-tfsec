@@ -3,8 +3,7 @@ import * as child from 'child_process';
 import * as semver from 'semver';
 import { v4 as uuid } from 'uuid';
 import * as path from 'path';
-import { Glob } from 'glob';
-import { unlinkSync } from 'fs';
+import { unlinkSync, readdirSync } from 'fs';
 
 export class TfsecWrapper {
     private workingPath: string[] = [];
@@ -35,10 +34,10 @@ export class TfsecWrapper {
             return;
         }
 
-        new Glob(`${this.resultsStoragePath}/*_results.json`, {}, function (_err, files) {
-            files.forEach(file => {
-                unlinkSync(file);
-            });
+        var files = readdirSync(this.resultsStoragePath).filter(fn => fn.endsWith('_results.json'));
+        files.forEach(file => {
+            let deletePath = path.join(this.resultsStoragePath, file);
+            unlinkSync(deletePath);
         });
 
         const binary = this.getBinaryPath();

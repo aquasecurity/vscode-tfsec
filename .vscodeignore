@@ -1,0 +1,4 @@
+**/*.ts
+*.gif
+*.png
+!tfsec.png

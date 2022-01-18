@@ -2,6 +2,12 @@
 
 All notable changes to the "tfsec" extension will be documented in this file.
 
+### 1.7.2
+- Fix issue with glob
+
+### 1.7.1
+- Minify the extension
+
 ### 1.7.0
 - Support multi folder workspaces
 - Save results in a folder with unique names
