@@ -1,16 +1,29 @@
 import * as vscode from 'vscode';
 import * as child from 'child_process';
 import * as semver from 'semver';
+import { v4 as uuid } from 'uuid';
+import * as path from 'path';
+import { Glob } from 'glob';
+import { unlinkSync } from 'fs';
 
 export class TfsecWrapper {
-    private workingPath: string = "";
+    private workingPath: string[] = [];
     constructor(
         private outputChannel: vscode.OutputChannel,
         private readonly resultsStoragePath: string) {
-        if (vscode.workspace && vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders.length > 0
-            && vscode.workspace.workspaceFolders[0] !== undefined) {
-            this.workingPath = vscode.workspace.workspaceFolders[0].uri.fsPath;
-        };
+        if (!vscode.workspace || !vscode.workspace.workspaceFolders || vscode.workspace.workspaceFolders.length <= 0) {
+            return;
+        }
+        const folders = vscode.workspace.workspaceFolders;
+        for (let i = 0; i < folders.length; i++) {
+            if (folders[i]) {
+                const workspaceFolder = folders[i];
+                if (!workspaceFolder) {
+                    continue;
+                }
+                this.workingPath.push(workspaceFolder.uri.fsPath);
+            }
+        }
     }
 
     run() {
@@ -22,30 +35,39 @@ export class TfsecWrapper {
             return;
         }
 
+        new Glob(`${this.resultsStoragePath}/*_results.json`, {}, function (_err, files) {
+            files.forEach(file => {
+                unlinkSync(file);
+            });
+        });
+
         const binary = this.getBinaryPath();
 
-        let command = this.buildCommand();
-        this.outputChannel.appendLine(`command: ${command}`);
+        this.workingPath.forEach(workingPath => {
+            let command = this.buildCommand(workingPath);
+            this.outputChannel.appendLine(`command: ${command}`);
 
-        var execution = child.spawn(binary, command);
+            var execution = child.spawn(binary, command);
 
-        execution.stdout.on('data', function (data) {
-            outputChannel.appendLine(data.toString());
+            execution.stdout.on('data', function (data) {
+                outputChannel.appendLine(data.toString());
+            });
+
+            execution.stderr.on('data', function (data) {
+                outputChannel.appendLine(data.toString());
+            });
+
+            execution.on('exit', function (code) {
+                if (code !== 0) {
+                    vscode.window.showErrorMessage("tfsec failed to run");
+                    return;
+                };
+                vscode.window.showInformationMessage('tfsec ran successfully, updating results');
+                outputChannel.appendLine('Reloading the Findings Explorer content');
+                setTimeout(() => { vscode.commands.executeCommand("tfsec.refresh"); }, 250);
+            });
         });
 
-        execution.stderr.on('data', function (data) {
-            outputChannel.appendLine(data.toString());
-        });
-
-        execution.on('exit', function (code) {
-            if (code !== 0) {
-                vscode.window.showErrorMessage("tfsec failed to run");
-                return;
-            };
-            vscode.window.showInformationMessage('tfsec ran successfully, updating results');
-            outputChannel.appendLine('Reloading the Findings Explorer content');
-            setTimeout(() => { vscode.commands.executeCommand("tfsec.refresh"); }, 250);
-        });
     }
 
 
@@ -129,7 +151,7 @@ export class TfsecWrapper {
     };
 
 
-    private buildCommand(): string[] {
+    private buildCommand(workingPath: string): string[] {
         const config = vscode.workspace.getConfiguration('tfsec');
         var command = [];
 
@@ -147,8 +169,9 @@ export class TfsecWrapper {
         // add soft fail for exit code
         command.push('--soft-fail');
         command.push('--format=json');
-        command.push(`--out=${this.resultsStoragePath}`);
-        command.push(this.workingPath);
+        const resultsPath = path.join(this.resultsStoragePath, `${uuid()}_results.json`);
+        command.push(`--out=${resultsPath}`);
+        command.push(workingPath);
 
         return command;
     }

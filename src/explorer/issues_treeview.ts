@@ -1,9 +1,10 @@
 import * as vscode from 'vscode';
 import * as fs from 'fs';
 import * as path from 'path';
-import { sortByCode, sortBySeverity, uniqueLocations } from './utils';
+import { sortByCode, sortBySeverity, sortResults, uniqueLocations } from './utils';
 import { CheckResult, CheckSeverity } from './check_result';
 import { TfsecTreeItem, TfsecTreeItemType } from './tfsec_treeitem';
+import { Glob } from 'glob';
 
 export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem> {
 
@@ -22,43 +23,53 @@ export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem
 			if (!fs.existsSync(this.storagePath)) {
 				fs.mkdirSync(context.storageUri.fsPath);
 			}
-			this.resultsStoragePath = path.join(context.storageUri.fsPath, ".tfsec_results.json");
+			this.resultsStoragePath = path.join(context.storageUri.fsPath, '/.tfsec/');
 			if (!fs.existsSync(this.resultsStoragePath)) {
-				fs.closeSync(fs.openSync(this.resultsStoragePath, 'w'));
+				fs.mkdirSync(this.resultsStoragePath);
 			}
 		}
 	}
 
 	refresh(): void {
 		this.taintResults = true;
-		this._onDidChangeTreeData.fire();
+		this.loadResultData();
 	}
 
 	// when there is a tfsec output file, load the results
-	loadResultData() {
+	async loadResultData() {
+		var _self = this;
+		_self.resultData = [];
 		if (this.resultsStoragePath !== "" && vscode.workspace && vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders[0]) {
 			this.rootpath = vscode.workspace.workspaceFolders[0].uri.fsPath;
-			if (fs.existsSync(this.resultsStoragePath)) {
-				let content = fs.readFileSync(this.resultsStoragePath, 'utf8');
-				try {
-					const data = JSON.parse(content);
-					this.resultData = [];
-					if (data === null || data.results === null) {
-						return;
+			let resultGlobber = new Glob(`${this.resultsStoragePath}/*_results.json`, {}, function (_err, files) {
+				files.forEach(element => {
+					if (fs.existsSync(element)) {
+						let content = fs.readFileSync(element, 'utf8');
+						try {
+							const data = JSON.parse(content);
+							if (data === null || data.results === null) {
+								return;
+							}
+							let results = data.results.sort(sortResults);
+							for (let i = 0; i < results.length; i++) {
+								const element = results[i];
+								_self.resultData.push(new CheckResult(element));
+							}
+						}
+						catch {
+							console.debug(`Error loading results file ${element}`);
+						}
 					}
-					for (let i = 0; i < data.results.length; i++) {
-						const element = data.results[i];
-						this.resultData.push(new CheckResult(element));
-					}
-					this.taintResults = !this.taintResults;
-				}
-				catch {
-					console.debug(`Error loading results file ${this.resultsStoragePath}`);
-				}
-			}
+				});
+			});
+			resultGlobber.on('end', function () {
+				_self.taintResults = !_self.taintResults;
+				_self._onDidChangeTreeData.fire();
+			});
 		} else {
 			vscode.window.showInformationMessage("No workspace detected to load tfsec results from");
 		}
+		this.taintResults = false;
 	}
 
 	getTreeItem(element: TfsecTreeItem): vscode.TreeItem {
@@ -82,9 +93,9 @@ export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem
 		var results: TfsecTreeItem[] = [];
 		var resolvedSeverities: string[] = [];
 
-		if (this.taintResults) {
-			this.loadResultData();
-		}
+		// if (this.taintResults) {
+		// 	Promise.resolve(this.loadResultData());
+		// }
 
 		for (let index = 0; index < this.resultData.length; index++) {
 			const result = this.resultData[index];
@@ -107,9 +118,9 @@ export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem
 		var resolvedCodes: string[] = [];
 
 
-		if (this.taintResults) {
-			this.loadResultData();
-		}
+		// if (this.taintResults) {
+		// 	this.loadResultData();
+		// }
 
 		for (let index = 0; index < this.resultData.length; index++) {
 			const result = this.resultData[index];
@@ -139,7 +150,7 @@ export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem
 			if (result.code !== code) {
 				continue;
 			}
-			let filename = trimPrefix(result.filename.replace(this.rootpath, ""), path.sep);
+			let filename = path.relative(this.rootpath, result.filename);
 			const cmd = this.createFileOpenCommand(result);
 			var item = new TfsecTreeItem(`${filename}:${result.startLine}`, result, vscode.TreeItemCollapsibleState.None, cmd);
 			results.push(item);
@@ -161,12 +172,3 @@ export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem
 		};
 	}
 }
-
-function trimPrefix(input: string, prefix: string): string {
-	var result = input;
-	if (input.indexOf(prefix) === 0) {
-		result = input.substr(prefix.length);
-	}
-	return result;
-}
-
