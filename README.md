@@ -24,6 +24,9 @@ Ignore codes will be automatically resolved and the description of the error wil
 
 ## Release Notes
 
+### 1.7.3
+- Fix issue with tfsec `v1.0.0-rc.2`
+
 ### 1.7.2
 - Fix issue with glob
  

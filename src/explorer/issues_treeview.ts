@@ -40,7 +40,7 @@ export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem
 		_self.resultData = [];
 		if (this.resultsStoragePath !== "" && vscode.workspace && vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders[0]) {
 			this.rootpath = vscode.workspace.workspaceFolders[0].uri.fsPath;
-			var files = fs.readdirSync(this.resultsStoragePath).filter(fn => fn.endsWith('_results.json'));
+			var files = fs.readdirSync(this.resultsStoragePath).filter(fn => fn.endsWith('_results.json') || fn.endsWith('_results.json.json'));
 			Promise.resolve(files.forEach(file => {
 				const resultFile = path.join(this.resultsStoragePath, file);
 				if (fs.existsSync(resultFile)) {

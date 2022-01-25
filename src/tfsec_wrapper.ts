@@ -34,7 +34,7 @@ export class TfsecWrapper {
             return;
         }
 
-        var files = readdirSync(this.resultsStoragePath).filter(fn => fn.endsWith('_results.json'));
+        var files = readdirSync(this.resultsStoragePath).filter(fn => fn.endsWith('_results.json') || fn.endsWith('_results.json.json') );
         files.forEach(file => {
             let deletePath = path.join(this.resultsStoragePath, file);
             unlinkSync(deletePath);
