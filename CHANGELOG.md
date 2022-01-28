@@ -2,6 +2,9 @@
 
 All notable changes to the "tfsec" extension will be documented in this file.
 
+### 1.7.4 
+- Fix the icons for Severity and tfsec checkname
+
 ### 1.7.3
 - Fix issue with tfsec `v1.0.0-rc.2`
 

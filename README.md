@@ -24,6 +24,9 @@ Ignore codes will be automatically resolved and the description of the error wil
 
 ## Release Notes
 
+### 1.7.4 
+- Fix the icons for Severity and tfsec checkname
+
 ### 1.7.3
 - Fix issue with tfsec `v1.0.0-rc.2`
 
@@ -41,33 +44,5 @@ Ignore codes will be automatically resolved and the description of the error wil
 - Refactor the runner to clean up extension code
 - clean up some redundant code
 
-### 1.6.1
-- Prettify with nice icons
-- 
-### 1.6.0
-- Switch from ExecSync to Spawn for running tfsec
-- Don't show the output window so much, we know its there
-- Update mass ignores to always add a new line
-
-### 1.5.0
-- Check for tfsec before running any commands
-- Add debug setting for richer output option
-- remove some redundant logging
-
-### 1.4.1
-- Fix updater 
-
-### 1.4.0
-- Use output channel instead of terminal for better cross platform command support
-- Remove explicit run command and use refresh to update the list with a fresh run
-- Add ignore all severity
-- Fix the refresh after ignores have been completed
-- Add more information to the update output 
-
-### 1.3.1
-- Update the repository link
-
-### 1.3.0
-- Remove dependency on codes resource for resolving legacy IDs
 
 #### See Change log for more information

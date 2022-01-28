@@ -43,16 +43,16 @@ export class TfsecTreeItem extends vscode.TreeItem {
 				this.contextValue = "TFSEC_CODE";
 				this.tooltip = `${check.codeDescription}`;
 				this.iconPath = {
-					light: path.join(__filename, '..', '..', '..', 'resources', 'light', 'tfsec.svg'),
-					dark: path.join(__filename, '..', '..', '..', 'resources', 'dark', 'tfsec.svg')
+					light: path.join(__filename, '..', '..', 'resources', 'light', 'tfsec.svg'),
+					dark: path.join(__filename, '..', '..', 'resources', 'dark', 'tfsec.svg')
 				};
 			}
 		} else {
 			this.treeItemType = TfsecTreeItemType.issueSeverity;
 			this.contextValue = "TFSEC_SEVERITY";
 			this.iconPath = {
-				light: path.join(__filename, '..', '..', '..', 'resources', this.severityIcon(this.severity)),
-				dark: path.join(__filename, '..', '..', '..', 'resources', this.severityIcon(this.severity))
+				light: path.join(__filename, '..', '..', 'resources', this.severityIcon(this.severity)),
+				dark: path.join(__filename, '..', '..', 'resources', this.severityIcon(this.severity))
 			};
 		}
 	}
