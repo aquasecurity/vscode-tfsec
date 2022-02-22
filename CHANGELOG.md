@@ -2,6 +2,10 @@
 
 All notable changes to the "tfsec" extension will be documented in this file.
 
+
+### 1.7.5
+- Update the severity icons inline with Aqua colours
+
 ### 1.7.4 
 - Fix the icons for Severity and tfsec checkname
 

@@ -24,6 +24,9 @@ Ignore codes will be automatically resolved and the description of the error wil
 
 ## Release Notes
 
+### 1.7.5
+- Update the severity icons inline with Aqua colours
+
 ### 1.7.4 
 - Fix the icons for Severity and tfsec checkname
 
