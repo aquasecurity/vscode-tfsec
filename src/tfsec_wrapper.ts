@@ -34,7 +34,7 @@ export class TfsecWrapper {
             return;
         }
 
-        var files = readdirSync(this.resultsStoragePath).filter(fn => fn.endsWith('_results.json') || fn.endsWith('_results.json.json') );
+        var files = readdirSync(this.resultsStoragePath).filter(fn => fn.endsWith('_results.json') || fn.endsWith('_results.json.json'));
         files.forEach(file => {
             let deletePath = path.join(this.resultsStoragePath, file);
             unlinkSync(deletePath);
@@ -59,6 +59,7 @@ export class TfsecWrapper {
             execution.on('exit', function (code) {
                 if (code !== 0) {
                     vscode.window.showErrorMessage("tfsec failed to run");
+                    outputChannel.show();
                     return;
                 };
                 vscode.window.showInformationMessage('tfsec ran successfully, updating results');
