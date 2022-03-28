@@ -24,6 +24,12 @@ Ignore codes will be automatically resolved and the description of the error wil
 
 ## Release Notes
 
+### 1.8.0
+- Add snippets support
+  - using `tfsec-check-file` in a yaml file to create custom check
+  - using `tfsec-custom-check` in the existing check file to add a new custom check
+- Add icon on toolbar to get the version
+
 ### 1.7.5
 - Update the severity icons inline with Aqua colours
 

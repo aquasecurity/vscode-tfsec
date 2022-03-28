@@ -3,7 +3,7 @@
   "displayName": "tfsec",
   "publisher": "tfsec",
   "description": "tfsec integration for Visual Studio Code",
-  "version": "1.7.5",
+  "version": "1.8.0",
   "engines": {
     "vscode": "^1.54.0"
   },
@@ -101,7 +101,11 @@
       },
       {
         "command": "tfsec.version",
-        "title": "tfsec: Get the current version of tfsec"
+        "title": "tfsec: Get the current version of tfsec",
+        "icon": {
+          "light": "resources/light/help.svg",
+          "dark": "resources/dark/help.svg"
+        }
       }
     ],
     "viewsContainers": {
@@ -156,6 +160,11 @@
           "command": "tfsec.updatebinary",
           "when": "view == tfsec.issueview",
           "group": "navigation@2"
+        },
+        {
+          "command": "tfsec.version",
+          "when": "view == tfsec.issueview",
+          "group": "navigation@2"
         }
       ],
       "view/item/context": [
@@ -172,7 +181,13 @@
           "when": "view == tfsec.issueview && viewItem == TFSEC_SEVERITY"
         }
       ]
-    }
+    },
+    "snippets": [
+      {
+        "language": "yaml",
+        "path": "./src/snippets/custom_checks.json"
+      }
+    ]
   },
   "scripts": {
     "vscode:prepublish": "npm run esbuild-base -- --minify",

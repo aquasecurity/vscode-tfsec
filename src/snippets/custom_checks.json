@@ -1,0 +1,48 @@
+{
+    "custom_checks_yaml": {
+        "prefix": [
+            "tfsec-check-file"
+        ],
+        "body": [
+            "---",
+            "checks:",
+            "  - code: ${1}",
+            "    description: ${2}",
+            "    requiredTypes:",
+            "      - ${3:resource}",
+            "    requiredLabels:",
+            "      - ${4}",
+            "    severity: ${5:MEDIUM}",
+            "    matchSpec:",
+            "    name: ${6}",
+            "    action: ${7}",
+            "    value: ${8}",
+            "    errorMessage: ${9}",
+            "    relatedLinks:",
+            "      - ${10}"
+        ],
+        "description": "Add the body for custom checks file."
+    },
+    "custom_check": {
+        "prefix": [
+            "tfsec-custom-check"
+        ],
+        "body": [
+            "  - code: ${1}",
+            "    description: ${2}",
+            "    requiredTypes:",
+            "      - ${3:resource}",
+            "    requiredLabels:",
+            "      - ${4}",
+            "    severity: ${5:MEDIUM}",
+            "    matchSpec:",
+            "    name: ${6}",
+            "    action: ${7}",
+            "    value: ${8}",
+            "    errorMessage: ${9}",
+            "    relatedLinks:",
+            "      - ${10}"
+        ],
+        "description": "Add the body for an individual custom check."
+    }
+}
