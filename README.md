@@ -24,6 +24,10 @@ Ignore codes will be automatically resolved and the description of the error wil
 
 ## Release Notes
 
+### 1.9.0
+- Support new tfsec filesystem (relative path resolution)
+  - Maintain support older versions of tfsec
+
 ### 1.8.0
 - Add snippets support
   - using `tfsec-check-file` in a yaml file to create custom check
