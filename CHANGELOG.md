@@ -2,6 +2,10 @@
 
 All notable changes to the "tfsec" extension will be documented in this file.
 
+### 1.9.0
+- Support new tfsec filesystem (relative path resolution)
+  - Maintain support older versions of tfsec
+
 ### 1.8.0
 - Add snippets support
   - using `tfsec-check-file` in a yaml file to create custom check

@@ -148,7 +148,7 @@ export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem
 			if (result.code !== code) {
 				continue;
 			}
-			let filename = path.relative(this.rootpath, result.filename);
+			let filename = this.relativizePath(result.filename);
 			const cmd = this.createFileOpenCommand(result);
 			var item = new TfsecTreeItem(`${filename}:${result.startLine}`, result, vscode.TreeItemCollapsibleState.None, cmd);
 			results.push(item);
@@ -156,13 +156,28 @@ export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem
 		return uniqueLocations(results);
 	}
 
+	private absolutizePath(incomingPath: string): string {
+		if (path.isAbsolute(incomingPath)) {
+			return incomingPath;
+		}
+		return path.join(this.rootpath, incomingPath);
+	}
+
+	private relativizePath(incomingPath: string): string {
+		if (path.isAbsolute(incomingPath)) {
+			return path.relative(this.rootpath, incomingPath);
+		}
+		return incomingPath;
+	}
+
 	private createFileOpenCommand(result: CheckResult) {
 		const issueRange = new vscode.Range(new vscode.Position(result.startLine - 1, 0), new vscode.Position(result.endLine, 0));
+
 		return {
 			command: "vscode.open",
 			title: "",
 			arguments: [
-				vscode.Uri.file(result.filename),
+				vscode.Uri.file(this.absolutizePath(result.filename)),
 				{
 					selection: issueRange,
 				}
