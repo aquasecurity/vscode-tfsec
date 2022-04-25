@@ -2,6 +2,10 @@
 
 All notable changes to the "tfsec" extension will be documented in this file.
 
+### 1.10.0
+- Fix issue with file path names in the explorer
+- Add context support for locally ignoring files and directories
+
 ### 1.9.0
 - Support new tfsec filesystem (relative path resolution)
   - Maintain support older versions of tfsec

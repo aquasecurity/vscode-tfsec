@@ -27,7 +27,8 @@
   "activationEvents": [
     "onView:tfsec.issueview",
     "onLanguage:terraform",
-    "onCommand:tfsec.run"
+    "onCommand:tfsec.run",
+    "workspaceContains:**/*.tf"
   ],
   "main": "./out/main.js",
   "contributes": {
