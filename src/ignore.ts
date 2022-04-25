@@ -5,6 +5,7 @@ import { TfsecTreeItem, TfsecTreeItemType } from './explorer/tfsec_treeitem';
 
 let timeout: NodeJS.Timer | undefined = undefined;
 let activeEditor = vscode.window.activeTextEditor;
+import * as path from 'path';
 
 class IgnoreDetails {
     public readonly code: string;
@@ -143,6 +144,23 @@ const ignoreInstance = (element: TfsecTreeItem, outputChannel: vscode.OutputChan
 };
 
 
+const ingorePath = (element: any) => {
+
+    if (vscode.workspace && vscode.workspace.workspaceFolders && vscode.workspace.workspaceFolders[0]) {
+        const rootpath = vscode.workspace.workspaceFolders[0].uri.fsPath;
+        const config = vscode.workspace.getConfiguration("tfsec");
+        let excludedPaths = config.get<string[]>("excludedPaths");
+
+        var filepath = element.fsPath;
+        filepath = path.relative(rootpath, filepath);
+
+        excludedPaths?.push(filepath);
+        excludedPaths = [...new Set(excludedPaths?.map(obj => obj))];
+
+        config.update("excludedPaths", excludedPaths, false);
+    }
+};
+
 const ignoreAllInstances = async (element: TfsecTreeItem, issueProvider: TfsecIssueProvider, outputChannel: vscode.OutputChannel) => {
     outputChannel.show();
     outputChannel.appendLine("\nSetting ignores - ");
@@ -189,4 +207,4 @@ const ignoreAllInstances = async (element: TfsecTreeItem, issueProvider: TfsecIs
 };
 
 
-export { ignoreAllInstances, ignoreInstance, triggerDecoration, IgnoreDetails, FileIgnores };
+export { ignoreAllInstances, ignoreInstance, ingorePath, triggerDecoration, IgnoreDetails, FileIgnores };

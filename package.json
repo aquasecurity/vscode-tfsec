@@ -3,7 +3,7 @@
   "displayName": "tfsec",
   "publisher": "tfsec",
   "description": "tfsec integration for Visual Studio Code",
-  "version": "1.9.0",
+  "version": "1.10.0",
   "engines": {
     "vscode": "^1.54.0"
   },
@@ -63,6 +63,11 @@
           "type": "boolean",
           "default": "false",
           "description": "Run tfsec with vebose flag to get more information"
+        },
+        "tfsec.excludedPaths": {
+          "type": "array",
+          "default": [],
+          "description": "Run tfsec but exclude these folders"
         }
       }
     },
@@ -90,6 +95,10 @@
       {
         "command": "tfsec.ignore",
         "title": "Ignore this issue instance"
+      },
+      {
+        "command": "tfsec.ignorePath",
+        "title": "Ignore path during tfsec runs"
       },
       {
         "command": "tfsec.ignoreAll",
@@ -144,6 +153,12 @@
       }
     ],
     "menus": {
+      "explorer/context": [
+        {
+          "command": "tfsec.ignorePath",
+          "when": "resourceExtname == .tf || explorerResourceIsFolder"
+        }
+      ],
       "commandPalette": [
         {
           "command": "tfsec.ignore",

@@ -11,7 +11,7 @@ export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem
 	readonly onDidChangeTreeData: vscode.Event<TfsecTreeItem | undefined | void> = this._onDidChangeTreeData.event;
 	public resultData: CheckResult[] = [];
 	private taintResults: boolean = true;
-	private rootpath: string = "";
+	public rootpath: string = "";
 	private storagePath: string = "";
 	public readonly resultsStoragePath: string = "";
 
@@ -91,10 +91,6 @@ export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem
 		var results: TfsecTreeItem[] = [];
 		var resolvedSeverities: string[] = [];
 
-		// if (this.taintResults) {
-		// 	Promise.resolve(this.loadResultData());
-		// }
-
 		for (let index = 0; index < this.resultData.length; index++) {
 			const result = this.resultData[index];
 			if (result === undefined) {
@@ -115,10 +111,6 @@ export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem
 		var results: TfsecTreeItem[] = [];
 		var resolvedCodes: string[] = [];
 
-
-		// if (this.taintResults) {
-		// 	this.loadResultData();
-		// }
 
 		for (let index = 0; index < this.resultData.length; index++) {
 			const result = this.resultData[index];
@@ -148,7 +140,7 @@ export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem
 			if (result.code !== code) {
 				continue;
 			}
-			let filename = this.relativizePath(result.filename);
+			const filename = this.relativizePath(result.filename);
 			const cmd = this.createFileOpenCommand(result);
 			var item = new TfsecTreeItem(`${filename}:${result.startLine}`, result, vscode.TreeItemCollapsibleState.None, cmd);
 			results.push(item);
@@ -156,28 +148,27 @@ export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem
 		return uniqueLocations(results);
 	}
 
-	private absolutizePath(incomingPath: string): string {
-		if (path.isAbsolute(incomingPath)) {
-			return incomingPath;
-		}
-		return path.join(this.rootpath, incomingPath);
-	}
 
 	private relativizePath(incomingPath: string): string {
-		if (path.isAbsolute(incomingPath)) {
-			return path.relative(this.rootpath, incomingPath);
-		}
-		return incomingPath;
+		const pathParts = path.parse(this.rootpath);
+		const workingIncomingPath = pathParts.root + incomingPath;
+		return path.relative(this.rootpath, workingIncomingPath);
+	}
+
+	private absolutizePath(incomingPath: string): string {
+		const pathParts = path.parse(this.rootpath);
+		return path.join(pathParts.root, incomingPath);
 	}
 
 	private createFileOpenCommand(result: CheckResult) {
 		const issueRange = new vscode.Range(new vscode.Position(result.startLine - 1, 0), new vscode.Position(result.endLine, 0));
 
+		const pathToOpen = this.absolutizePath(result.filename);
 		return {
 			command: "vscode.open",
 			title: "",
 			arguments: [
-				vscode.Uri.file(this.absolutizePath(result.filename)),
+				vscode.Uri.file(pathToOpen),
 				{
 					selection: issueRange,
 				}

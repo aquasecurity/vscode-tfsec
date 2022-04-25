@@ -166,6 +166,14 @@ export class TfsecWrapper {
             command.push('--verbose');
         }
 
+        const excludes = config.get<string[]>("excludedPaths");
+        if (excludes && excludes.length > 0) {
+            excludes.forEach((element: string) => {
+                command.push(`--exclude-path=${element}`);
+            });
+        }
+
+
         // add soft fail for exit code
         command.push('--soft-fail');
         command.push('--format=json');
