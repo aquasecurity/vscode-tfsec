@@ -1,5 +1,5 @@
 import * as vscode from 'vscode';
-import { ignoreAllInstances, ignoreInstance, triggerDecoration } from './ignore';
+import { ignoreAllInstances, ignoreInstance, ingorePath, triggerDecoration } from './ignore';
 import { TfsecIssueProvider } from './explorer/issues_treeview';
 import { TfsecTreeItem } from './explorer/tfsec_treeitem';
 import { TfsecHelpProvider } from './explorer/check_helpview';
@@ -37,6 +37,7 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand('tfsec.ignoreSeverity', (element: TfsecTreeItem) => ignoreAllInstances(element, issueProvider, outputChannel)));
 	context.subscriptions.push(vscode.commands.registerCommand("tfsec.run", () => tfsecWrapper.run()));
 	context.subscriptions.push(vscode.commands.registerCommand("tfsec.updatebinary", () => tfsecWrapper.updateBinary()));
+	context.subscriptions.push(vscode.commands.registerCommand('tfsec.ignorePath', (element: any) => ingorePath(element)));
 
 	context.subscriptions.push(vscode.window.onDidChangeActiveTextEditor(editor => {
 		// only act if this is a terraform file

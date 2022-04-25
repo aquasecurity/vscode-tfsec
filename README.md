@@ -22,7 +22,17 @@ Ignore codes will be automatically resolved and the description of the error wil
 
 ![ignoredesc](ignoredesc.gif)
 
+### Ignoring filepaths
+
+In the Explorer view, you can right click on a folder or .tf file and select `Ignore path during tfsec runs`. This will pass the path to `--exclude-path` when running tfsec and is only applicable to this workspace on this machine.
+
+To remove ignores, edit the `tfsec.excludedPath` in the `.vscode/settings.json` file of the current workspace.
+
 ## Release Notes
+
+### 1.10.0
+- Fix issue with file path names in the explorer
+- Add context support for locally ignoring files and directories
 
 ### 1.9.0
 - Support new tfsec filesystem (relative path resolution)
