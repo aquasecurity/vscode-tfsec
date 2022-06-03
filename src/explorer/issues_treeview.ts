@@ -149,19 +149,12 @@ export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem
 	}
 
 
-	private relativizePath(incomingPath: string): string {
-		const pathParts = path.parse(this.rootpath);
-		const workingIncomingPath = pathParts.root + incomingPath;
-		return path.relative(this.rootpath, workingIncomingPath);
-	}
-
-
 	private createFileOpenCommand(result: CheckResult) {
 		const issueRange = new vscode.Range(new vscode.Position(result.startLine - 1, 0), new vscode.Position(result.endLine, 0));
 
 		const pathToOpen = path.join(result.filename);
-		
-return {
+
+		return {
 			command: "vscode.open",
 			title: "",
 			arguments: [
