@@ -30,6 +30,9 @@ To remove ignores, edit the `tfsec.excludedPath` in the `.vscode/settings.json` 
 
 ## Release Notes
 
+### 1.10.1
+- Fix Windows filepaths
+
 ### 1.10.0
 - Fix issue with file path names in the explorer
 - Add context support for locally ignoring files and directories

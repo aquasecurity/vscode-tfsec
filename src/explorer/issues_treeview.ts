@@ -140,7 +140,7 @@ export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem
 			if (result.code !== code) {
 				continue;
 			}
-			const filename = this.relativizePath(result.filename);
+			const filename = path.relative(this.rootpath, result.filename);
 			const cmd = this.createFileOpenCommand(result);
 			var item = new TfsecTreeItem(`${filename}:${result.startLine}`, result, vscode.TreeItemCollapsibleState.None, cmd);
 			results.push(item);
@@ -149,21 +149,11 @@ export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem
 	}
 
 
-	private relativizePath(incomingPath: string): string {
-		const pathParts = path.parse(this.rootpath);
-		const workingIncomingPath = pathParts.root + incomingPath;
-		return path.relative(this.rootpath, workingIncomingPath);
-	}
-
-	private absolutizePath(incomingPath: string): string {
-		const pathParts = path.parse(this.rootpath);
-		return path.join(pathParts.root, incomingPath);
-	}
-
 	private createFileOpenCommand(result: CheckResult) {
 		const issueRange = new vscode.Range(new vscode.Position(result.startLine - 1, 0), new vscode.Position(result.endLine, 0));
 
-		const pathToOpen = this.absolutizePath(result.filename);
+		const pathToOpen = path.join(result.filename);
+
 		return {
 			command: "vscode.open",
 			title: "",
