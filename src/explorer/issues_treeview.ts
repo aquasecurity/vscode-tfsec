@@ -4,6 +4,7 @@ import * as path from 'path';
 import { sortByCode, sortBySeverity, sortResults, uniqueLocations } from './utils';
 import { CheckResult, CheckSeverity } from './check_result';
 import { TfsecTreeItem, TfsecTreeItemType } from './tfsec_treeitem';
+import { checkServerIdentity } from 'tls';
 
 export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem> {
 
@@ -14,8 +15,9 @@ export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem
 	public rootpath: string = "";
 	private storagePath: string = "";
 	public readonly resultsStoragePath: string = "";
+	private diagCollection: vscode.DiagnosticCollection;
 
-	constructor(context: vscode.ExtensionContext) {
+	constructor(context: vscode.ExtensionContext, diagCollection: vscode.DiagnosticCollection) {
 		if (context.storageUri) {
 			this.storagePath = context.storageUri.fsPath;
 			console.log(`storage path is ${this.storagePath}`);
@@ -27,6 +29,8 @@ export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem
 				fs.mkdirSync(this.resultsStoragePath);
 			}
 		}
+
+		this.diagCollection = diagCollection;
 	}
 
 	refresh(): void {
@@ -45,6 +49,9 @@ export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem
 				const resultFile = path.join(this.resultsStoragePath, file);
 				if (fs.existsSync(resultFile)) {
 					let content = fs.readFileSync(resultFile, 'utf8');
+
+					let diagnostics =  new Map<string, vscode.Diagnostic[]>();
+
 					try {
 						const data = JSON.parse(content);
 						if (data === null || data.results === null) {
@@ -53,11 +60,21 @@ export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem
 						let results = data.results.sort(sortResults);
 						for (let i = 0; i < results.length; i++) {
 							const element = results[i];
-							_self.resultData.push(new CheckResult(element));
+							let result = new CheckResult(element);
+							_self.resultData.push(result);
+							
+							if (diagnostics.get(result.filename) === undefined) {
+								diagnostics.set(result.filename, []);
+							}
+							diagnostics.get(result.filename)?.push(this.processProblem(result));
 						}
 					}
 					catch {
 						console.debug(`Error loading results file ${file}`);
+					}
+					
+					for (let [key, value] of diagnostics) {
+						this.diagCollection.set(vscode.Uri.file(key), value)
 					}
 				}
 			})).then(() => {
@@ -164,5 +181,10 @@ export class TfsecIssueProvider implements vscode.TreeDataProvider<TfsecTreeItem
 				}
 			]
 		};
+	}
+
+	private processProblem(check: CheckResult): vscode.Diagnostic {
+		let severity = check.severity === "Critical" || check.severity === "High" || check.severity === "Medium" ? vscode.DiagnosticSeverity.Error : vscode.DiagnosticSeverity.Warning
+		return new vscode.Diagnostic(new vscode.Range(new vscode.Position(check.startLine -1, 0), new vscode.Position(check.endLine -1, 0)), check.summary, severity);
 	}
 }

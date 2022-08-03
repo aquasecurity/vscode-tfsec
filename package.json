@@ -3,7 +3,7 @@
   "displayName": "tfsec",
   "publisher": "tfsec",
   "description": "tfsec integration for Visual Studio Code",
-  "version": "1.10.1",
+  "version": "1.11.0",
   "engines": {
     "vscode": "^1.54.0"
   },
@@ -235,6 +235,7 @@
     "@types/uuid": "^8.3.4",
     "semver": "^7.3.5",
     "typescipt": "^1.0.0",
-    "uuid": "^8.3.2"
+    "uuid": "^8.3.2",
+    "vsce": "^2.10.0"
   }
 }
