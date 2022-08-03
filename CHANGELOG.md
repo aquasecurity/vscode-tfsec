@@ -2,6 +2,9 @@
 
 All notable changes to the "tfsec" extension will be documented in this file.
 
+### 1.11.0
+- Add findings to the Problems tab
+
 ### 1.10.1
 - Fix Windows filepaths
 

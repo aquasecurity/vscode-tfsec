@@ -12,9 +12,10 @@ import { TfsecWrapper } from './tfsec_wrapper';
 export function activate(context: vscode.ExtensionContext) {
 	let activeEditor = vscode.window.activeTextEditor;
 	var outputChannel = vscode.window.createOutputChannel("tfsec");
+	let diagCollection = vscode.languages.createDiagnosticCollection();
 
 	const helpProvider = new TfsecHelpProvider();
-	const issueProvider = new TfsecIssueProvider(context);
+	const issueProvider = new TfsecIssueProvider(context, diagCollection);
 	const tfsecWrapper = new TfsecWrapper(outputChannel, issueProvider.resultsStoragePath);
 
 	// creating the issue tree explicitly to allow access to events
