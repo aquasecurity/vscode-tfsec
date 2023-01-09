@@ -45,6 +45,11 @@
           "default": "true",
           "description": "Don't include results from downloaded modules. (Still scanned, just not included in the results)"
         },
+        "tfsec.noModuleDownloads": {
+          "type": "boolean",
+          "default": "true",
+          "description": "Do not download remote modules"
+        },
         "tfsec.fullDepthSearch": {
           "type": "boolean",
           "default": "true",

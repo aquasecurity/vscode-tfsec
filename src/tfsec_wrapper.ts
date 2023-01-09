@@ -158,10 +158,15 @@ export class TfsecWrapper {
         if (config.get<boolean>('fullDepthSearch')) {
             command.push('--force-all-dirs');
         }
+        
         if (config.get<boolean>('ignoreDownloadedModules')) {
             command.push('--exclude-downloaded-modules');
         }
 
+        if (config.get<boolean>('noModuleDownloads')) {
+            command.push('--no-module-downloads');
+        }
+        
         if (config.get<boolean>('debug')) {
             command.push('--verbose');
         }
